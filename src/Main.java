@@ -11,8 +11,7 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 
-import static java.lang.Math.floor;
-import static java.lang.Math.log;
+import static java.lang.Math.*;
 
 //TODO: Get rid of ZoomableImage, that is no longer necessary (blurs image WAY too much to be viable)
 
@@ -36,6 +35,8 @@ public class Main {
 
   //Good point: (-.74364386269, .13182590271)
   //Good point: (0.001643721971153, 0.822467633298876)
+  //Good Point: (-1.74995768370609350360221450607069970727110579726252077930242837820286008082972804887218672784431700831100544507655659531379747541999999995,
+  //              0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995)
 
   public static void main(String[] args) throws Exception{
 
@@ -50,8 +51,21 @@ public class Main {
     statusLabel.setText("STATUS");
     showStartUI();
 
+    /*ImageIO.write(createZoomedImage(1920, 1080, 10000, 2e7,
+            -1.74995768370609350360221450607069970727110579726252077930242837820286008082972804887218672784431700831100544507655659531379747541999999995,
+            0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995),
+            "png", new File("images/mandelbrot.png"));*/
+
+    //System.out.println((int)Math.ceil(100 * log(3.18725072474E99)) + 100);
+    //System.out.println((int)Math.ceil(100 * log10(3.18725072474E99)) + 100);
+
     //makeGif(30, 1920, 1080, 1000, 1, 1.5, -.74364386269, .13182590271);
-    //makeGifWithThreads(100, 1920, 1080, 1000, 1, 1.01, -.74364386269, .13182590271);
+    /*makeGifWithThreadsAutoIterations(15, 1920, 1080, 1000, 1, 3,
+            -1.74995768370609350360221450607069970727110579726252077930242837820286008082972804887218672784431700831100544507655659531379747541999999995,
+            0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995);*/
+    /* makeGifWithThreads(500, 1920, 1080, 1000, 1, 1.5,
+            -1.74995768370609350360221450607069970727110579726252077930242837820286008082972804887218672784431700831100544507655659531379747541999999995,
+            0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995);*/
     //System.out.println(Runtime.getRuntime().availableProcessors());
 
     //testUnlimitedThreads();
@@ -149,7 +163,7 @@ public class Main {
     return (1 - i) * c1 + i * c2;
   }
 
-  //TODO: Update status in JFrame
+
   public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
                                         double zoomFactor, double x, double y) throws Exception {
     numImagesToCreate = numImages;
@@ -192,9 +206,8 @@ public class Main {
     for(int i = 1; i < numImages; i++) {
       writer.writeToSequence(images.get(i));
       System.out.println("Images processed: " + (i + 1) + "/" + numImages);
-      statusLabel.setText("Images processed: " + (i + 1) + "/" + numImages);
-      f.update(f.getGraphics());
-      //statusLabel.repaint();
+      /*statusLabel.setText("Images processed: " + (i + 1) + "/" + numImages);
+      f.update(f.getGraphics());*/
       //statusLabel.update(statusLabel.getGraphics());
     }
 
@@ -206,8 +219,74 @@ public class Main {
     numActiveThreads = 0;
     numImagesCreated = 0;
 
-    statusLabel.setText("GIF Created!");
-    f.update(f.getGraphics());
+    /*statusLabel.setText("GIF Created!");
+    f.update(f.getGraphics());*/
+
+    System.out.println((System.nanoTime() - startTime) / 1000000000);
+  }
+
+  public static void makeGifWithThreadsAutoIterations(int numImages, int width, int height, int iterations, double zoom,
+                                        double zoomFactor, double x, double y) throws Exception {
+    numImagesToCreate = numImages;
+    iterations = (int)Math.ceil(1000 * log(zoom)) + 100;
+    long startTime = System.nanoTime();
+    ThreadedImageCreator t;
+    for (int i = 0; i < numImages; i++) {
+      System.out.println(iterations);
+      //System.out.println(zoom);
+      t = new ThreadedImageCreator(Integer.toString(width) + "," + Integer.toString(height) + "," +
+              Integer.toString(iterations) + "," + Double.toString(zoom) + "," + Double.toString(x) + "," + Double.toString(y));
+      iterations = (int)Math.ceil(10000 * Math.pow(log(zoom), 1.1)) + 100;
+      t.start();
+      zoom = zoom * zoomFactor;
+    }
+
+    while(numImagesCreated < numImagesToCreate) {
+      TimeUnit.MILLISECONDS.sleep(10);
+    }
+
+    System.out.println("Starting sorting");
+    double smallestZoom;
+    int smallestIndex;
+    while(images.size() < numImages) {
+      smallestZoom = Double.MAX_VALUE;
+      smallestIndex = 0;
+      for (int i = 0; i < unorderedImages.size(); i++) {
+        if (unorderedImages.get(i).getZoom() < smallestZoom) {
+          smallestIndex = i;
+          smallestZoom = unorderedImages.get(i).getZoom();
+        }
+      }
+      images.add(unorderedImages.get(smallestIndex).image);
+      //System.out.println("Image " + images.size() + " has zoom " + unorderedImages.get(smallestIndex).zoom);
+      unorderedImages.remove(smallestIndex);
+    }
+    System.out.println("Finished sorting");
+
+    ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
+    //TODO: Give option to set timeBetweenFramesMS
+    GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), 5, true);
+    writer.writeToSequence(images.get(0));
+    System.out.println("Images processed: " + 1 + "/" + numImages);
+
+    for(int i = 1; i < numImages; i++) {
+      writer.writeToSequence(images.get(i));
+      System.out.println("Images processed: " + (i + 1) + "/" + numImages);
+      /*statusLabel.setText("Images processed: " + (i + 1) + "/" + numImages);
+      f.update(f.getGraphics());*/
+      //statusLabel.update(statusLabel.getGraphics());
+    }
+
+    writer.close();
+    output.close();
+
+    images = new ArrayList<>();
+    unorderedImages = new ArrayList<>();
+    numActiveThreads = 0;
+    numImagesCreated = 0;
+
+    /*statusLabel.setText("GIF Created!");
+    f.update(f.getGraphics());*/
 
     System.out.println((System.nanoTime() - startTime) / 1000000000);
   }
@@ -295,7 +374,8 @@ public class Main {
           int numImages = Integer.parseInt(numImagesText.getText());
           int iterations = Integer.parseInt(iterationsText.getText());
           double initialZoom = Double.parseDouble(initialZoomText.getText());
-          makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+          //makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+          makeGifWithThreadsAutoIterations(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
         } catch (Exception e) {
           System.out.println("GIF Creation Failed!");
         }

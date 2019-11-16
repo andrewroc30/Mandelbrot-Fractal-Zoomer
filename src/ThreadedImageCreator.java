@@ -49,13 +49,18 @@ public class ThreadedImageCreator implements Runnable{
     }
 
     public void run() {
-        Main.numActiveThreads++;
-        Main.unorderedImages.add(new ImageWithZoom(Main.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y), zoom));
-        System.out.println("Images created: " + (Main.numImagesCreated++ + 1));
-        Main.statusLabel.setText("Images created: " + (Main.numImagesCreated) + "/" + Main.numImagesToCreate);
-        Main.f.update(Main.f.getGraphics());
-        //Main.f.repaint();
-        Main.numActiveThreads--;
+        try {
+            Main.numActiveThreads++;
+            Main.unorderedImages.add(new ImageWithZoom(Main.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y), zoom));
+            System.out.println("Images created: " + (Main.numImagesCreated++ + 1) + "/" + Main.numImagesToCreate);
+            /*Main.statusLabel.setText("Images created: " + (Main.numImagesCreated) + "/" + Main.numImagesToCreate);
+            Main.f.update(Main.f.getGraphics());*/
+            //Main.f.repaint();
+            Main.numActiveThreads--;
+        }
+        catch (Error e) {
+            System.out.println("Thing ran out of space!");
+        }
     }
 
     public void start () {
