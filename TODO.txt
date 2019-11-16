@@ -1,0 +1,21 @@
+UI:
+ - Add images per second (GIF speed setting)
+ - Have checkbox for using auto iterations, which clears iterations field if checked
+ - Be able to specify file output path
+ - Show progress in window, not just console
+
+GENERAL:
+ - Ensure thread safety
+ - Be able to set and use limited number on thread count
+ - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
+ - Change coloring to use histogram coloring?? (could have better color scheme as well)
+ - Option to use higher d (multibrot sets with higher exponents)
+ - Make javadocs
+ - Be able to watch GIF or see image in window, not just save to file
+
+SPEEDUPS:
+ - Possibly automatically increase iterations as we zoom in further, making initial images lighter
+ - Could try to memoize points maybe... (unlikely to work or be effective)
+
+BUGS:
+ - createSmoothZoomedImage doesn't work
