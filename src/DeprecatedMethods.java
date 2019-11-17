@@ -1,34 +1,4 @@
 //public class DeprecatedMethods {
-//    public static void makeGif(int numImages, int width, int height, int iterations, double initialZoom, double zoomFactor, double x, double y) throws Exception {
-//        long startTime = System.nanoTime();
-//        String fileName = "images/mandelbrot.gif";
-//        double zoom = initialZoom;
-//        BufferedImage img1 = Main.ImageController.createZoomedImage(width, height, iterations, zoom, x, y);
-//
-//        ImageOutputStream output = new FileImageOutputStream(new File(fileName));
-//        GifSequenceWriter writer = new GifSequenceWriter(output, img1.getType(), 10, true);
-//        writer.writeToSequence(img1);
-//        statusLabel.setText("Images processed: " + (1) + "/" + numImages);
-//        f.update(f.getGraphics());
-//        System.out.println("Images processed: " + (1) + "/" + numImages);
-//
-//        for (int i = 1; i < numImages; i++) {
-//            writer.writeToSequence(ImageController.createZoomedImage(width, height, iterations, zoom, x, y));
-//            zoom = zoom * zoomFactor;
-//            statusLabel.setText("Images processed: " + (i + 1) + "/" + numImages);
-//            f.update(f.getGraphics());
-//            System.out.println("Images processed: " + (i + 1) + "/" + numImages);
-//        }
-//
-//        writer.close();
-//        output.close();
-//
-//        statusLabel.setText("GIF Created!");
-//        f.update(f.getGraphics());
-//
-//        System.out.println("Sequential GIF creator: " + ((System.nanoTime() - startTime) / 1000000000));
-//    }
-//
 //    public static void testUnlimitedThreads() throws Exception {
 //        long startTime = System.nanoTime();
 //        ThreadedImageCreator t;

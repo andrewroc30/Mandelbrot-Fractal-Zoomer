@@ -6,7 +6,16 @@ import static java.lang.Math.log;
 
 public class ImageController {
 
-    // Returns an image of the Mandelbrot set with the given zoom
+    /**
+     * Returns an image of the Mandelbrot set with the given zoom
+     * @param w The width in pixels of the image
+     * @param h The height in pixels of the image
+     * @param m The maximum number of iterations per pixel
+     * @param zoom The zoom of the image
+     * @param x_coord The x-coordinate of the center of the image
+     * @param y_coord The y-coordinate of the center of the image
+     * @return BufferedImage of the zoomed in image of the Mandelbrot set
+     */
     public static BufferedImage createZoomedImage(int w, int h, int m, double zoom, double x_coord, double y_coord) {
         int width = w, height = h, max = m;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -37,7 +46,16 @@ public class ImageController {
         return image;
     }
 
-    // Returns an image of the Mandelbrot set with the given zoom, but without banding
+    /**
+     * Returns an image of the Mandelbrot set with the given zoom, but without banding
+     * @param w The width in pixels of the image
+     * @param h The height in pixels of the image
+     * @param m The maximum number of iterations per pixel
+     * @param zoom The zoom of the image
+     * @param x_coord The x-coordinate of the center of the image
+     * @param y_coord The y-coordinate of the center of the image
+     * @return BufferedImage of the zoomed in image of the Mandelbrot set
+     */
     public static BufferedImage createSmoothZoomedImage(int w, int h, int m, double zoom, double x_coord, double y_coord) {
         int width = w, height = h, max = m;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -92,8 +110,14 @@ public class ImageController {
         return image;
     }
 
-    // Performs linear interpolation on the given values
     // TODO: should this return a double? Also stop casting to ints?
+    /**
+     * Performs linear interpolation on the given values to get a smooth coloring scheme
+     * @param c1 Value representing the first color
+     * @param c2 Value representing the second color
+     * @param i The current iteration
+     * @return The linear interpolation of the 2 colors
+     */
     public static float linear_interpolate(int c1, int c2, float i) {
         return (1 - i) * c1 + i * c2;
     }

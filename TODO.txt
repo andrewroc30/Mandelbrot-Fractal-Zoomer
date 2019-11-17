@@ -10,7 +10,6 @@ GENERAL:
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
- - Make javadocs
  - Be able to watch GIF or see image in window, not just save to file
 
 SPEEDUPS:

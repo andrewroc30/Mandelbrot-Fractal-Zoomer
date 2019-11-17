@@ -6,21 +6,55 @@ import javax.swing.*;
 
 public class Main {
 
-    public static JLabel statusLabel = new JLabel();
-    public static JFrame f = new JFrame("Mandelbrot Image Zoomer");
-    public static boolean isPaused = true;
+    private static JLabel statusLabel = new JLabel();
+    private static JFrame f = new JFrame("Mandelbrot Image Zoomer");
+    private static boolean isPaused = true;
 
     //Good point: (-.74364386269, .13182590271)
     //Good point: (0.001643721971153, 0.822467633298876)
     //Good Point: (-1.74995768370609350360221450607069970727110579726252077930242837820286008082972804887218672784431700831100544507655659531379747541999999995,
     //              0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995)
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         statusLabel.setText("STATUS");
         showStartUI();
     }
 
-    // Shows the UI for the program and handles input
+    /**
+     * Gets the status label of the UI
+     * @return JLabel of status
+     */
+    public static JLabel getStatusLabel() {
+        return statusLabel;
+    }
+
+    /**
+     * Gets the UI window
+     * @return JFrame of the UI
+     */
+    public static JFrame getFrame() {
+        return f;
+    }
+
+    /**
+     * Gets whether or not we are paused
+     * @return boolean of whether we are paused
+     */
+    public static boolean getIsPaused() {
+        return isPaused;
+    }
+
+    /**
+     * Sets whether or not we are paused
+     * @param set Value to set whether we are paused to
+     */
+    public static void setIsPaused(boolean set) {
+        isPaused = set;
+    }
+
+    /**
+     * Shows the UI for the program and handles input
+     */
     private static void showStartUI() {
         JButton gif = new JButton("Create GIF");
         gif.setBounds(50, 400, 150, 50);
@@ -103,8 +137,9 @@ public class Main {
                     int numImages = Integer.parseInt(numImagesText.getText());
                     int iterations = Integer.parseInt(iterationsText.getText());
                     double initialZoom = Double.parseDouble(initialZoomText.getText());
-                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
-                    //GifController.makeGifWithThreadsAutoIterations(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+                    GifController.makeGif(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+                    //GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+                    //GifController.makeGifWithThreadsAutoIterations(numImages, 1920, 1080, initialZoom, zoomFactor, x, y);
                 } catch (Exception e) {
                     System.out.println("GIF Creation Failed!");
                 }

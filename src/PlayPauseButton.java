@@ -13,8 +13,8 @@ public class PlayPauseButton extends JButton implements ActionListener {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    Main.isPaused = !Main.isPaused;
-    if (Main.isPaused) {
+    Main.setIsPaused(!Main.getIsPaused());
+    if (Main.getIsPaused()) {
       b.setText("Play");
     }
     else {

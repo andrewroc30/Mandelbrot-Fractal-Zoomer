@@ -15,7 +15,18 @@ public class GifController {
     public static int numActiveThreads = 0;
     public static int numImagesToCreate = 0;
 
-    // Creates a Mandelbrot GIF using the given settings
+    /**
+     * Creates a Mandelbrot GIF using the given settings
+     * @param numImages The total number of images in the GIF
+     * @param width The width in pixels of the GIF
+     * @param height The height in pixels of the GIF
+     * @param iterations The number if iterations used to determine a single pixel (higher iterations means better image)
+     * @param zoom The starting zoom for the GIF
+     * @param zoomFactor The factor by which the zoom is increased every image in the GIF
+     * @param x The x-coordinate to zoom into
+     * @param y The y-coordinate to zoom into
+     * @throws Exception
+     */
     public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
                                           double zoomFactor, double x, double y) throws Exception {
         numImagesToCreate = numImages;
@@ -78,12 +89,21 @@ public class GifController {
         System.out.println((System.nanoTime() - startTime) / 1000000000);
     }
 
-
-    // Creates a Mandelbrot GIF using the given settings, but automatically sets iterations
-    public static void makeGifWithThreadsAutoIterations(int numImages, int width, int height, int iterations, double zoom,
+    /**
+     * Creates a Mandelbrot GIF using the given settings, but automatically sets iterations
+     * @param numImages The total number of images in the GIF
+     * @param width The width in pixels of the GIF
+     * @param height The height in pixels of the GIF
+     * @param zoom The starting zoom for the GIF
+     * @param zoomFactor The factor by which the zoom is increased every image in the GIF
+     * @param x The x-coordinate to zoom into
+     * @param y The y-coordinate to zoom into
+     * @throws Exception
+     */
+    public static void makeGifWithThreadsAutoIterations(int numImages, int width, int height, double zoom,
                                                         double zoomFactor, double x, double y) throws Exception {
         numImagesToCreate = numImages;
-        iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
+        int iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
         long startTime = System.nanoTime();
         ThreadedImageCreator t;
         for (int i = 0; i < numImages; i++) {
@@ -143,5 +163,35 @@ public class GifController {
         f.update(f.getGraphics());*/
 
         System.out.println((System.nanoTime() - startTime) / 1000000000);
+    }
+
+    public static void makeGif(int numImages, int width, int height, int iterations, double initialZoom, double zoomFactor, double x, double y) throws Exception {
+        long startTime = System.nanoTime();
+        String fileName = "images/mandelbrot.gif";
+        double zoom = initialZoom;
+        BufferedImage img1 = ImageController.createZoomedImage(width, height, iterations, zoom, x, y);
+
+        ImageOutputStream output = new FileImageOutputStream(new File(fileName));
+        GifSequenceWriter writer = new GifSequenceWriter(output, img1.getType(), 10, true);
+        writer.writeToSequence(img1);
+        Main.getStatusLabel().setText("Images processed: " + (1) + "/" + numImages);
+        Main.getFrame().update(Main.getFrame().getGraphics());
+        System.out.println("Images processed: " + (1) + "/" + numImages);
+
+        for (int i = 1; i < numImages; i++) {
+            writer.writeToSequence(ImageController.createZoomedImage(width, height, iterations, zoom, x, y));
+            zoom = zoom * zoomFactor;
+            Main.getStatusLabel().setText("Images processed: " + (i + 1) + "/" + numImages);
+            Main.getFrame().update(Main.getFrame().getGraphics());
+            System.out.println("Images processed: " + (i + 1) + "/" + numImages);
+        }
+
+        writer.close();
+        output.close();
+
+        Main.getStatusLabel().setText("GIF Created!");
+        Main.getFrame().update(Main.getFrame().getGraphics());
+
+        System.out.println("Sequential GIF creator: " + ((System.nanoTime() - startTime) / 1000000000));
     }
 }
