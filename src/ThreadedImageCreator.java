@@ -22,12 +22,34 @@ public class ThreadedImageCreator implements Runnable {
 
     public void run() {
         try {
-            GifController.numActiveThreads++;
-            GifController.unorderedImages.add(new ImageWithZoom(ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y), zoom));
-            System.out.println("Images created: " + (GifController.numImagesCreated++ + 1) + "/" + GifController.numImagesToCreate);
-            GifController.numActiveThreads--;
+            changeNumThreads(true);
+            ImageWithZoom image = new ImageWithZoom(ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y), zoom);
+            try {
+                Main.arrayPushLock.lock();
+                GifController.unorderedImages.add(image);
+                GifController.numImagesCreated++;
+                Main.updateStatusLabel("Images created: " + (GifController.numImagesCreated) + "/" + GifController.numImagesToCreate);
+            } catch (Exception e) {
+                System.out.println("THREAD FAILED");
+            } finally {
+                Main.arrayPushLock.unlock();
+                changeNumThreads(false);
+            }
         } catch (Error e) {
             System.out.println("Thing ran out of space!");
+        }
+    }
+
+    public void changeNumThreads(boolean increment) {
+        Main.numThreadsLock.lock();
+        try {
+            if(increment) {
+                GifController.numActiveThreads++;
+            } else {
+                GifController.numActiveThreads--;
+            }
+        } finally {
+            Main.numThreadsLock.unlock();
         }
     }
 

@@ -28,11 +28,15 @@ public class GifController {
      * @throws Exception
      */
     public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                          double zoomFactor, double x, double y) throws Exception {
+                                          double zoomFactor, double x, double y, int maxThreads) throws Exception {
         numImagesToCreate = numImages;
         long startTime = System.nanoTime();
         ThreadedImageCreator t;
         for (int i = 0; i < numImages; i++) {
+            //Wait until there is another space for the thread to be made
+            while(numActiveThreads >= maxThreads) {
+                Thread.sleep(10);
+            }
             t = new ThreadedImageCreator(Integer.toString(width) + "," + Integer.toString(height) + "," +
                     Integer.toString(iterations) + "," + Double.toString(zoom) + "," + Double.toString(x) + "," +
                     Double.toString(y));
@@ -57,7 +61,6 @@ public class GifController {
                 }
             }
             images.add(unorderedImages.get(smallestIndex).image);
-            //System.out.println("Image " + images.size() + " has zoom " + unorderedImages.get(smallestIndex).zoom);
             unorderedImages.remove(smallestIndex);
         }
         System.out.println("Finished sorting");
@@ -69,10 +72,7 @@ public class GifController {
 
         for (int i = 1; i < numImages; i++) {
             writer.writeToSequence(images.get(i));
-            System.out.println("Images processed: " + (i + 1) + "/" + numImages);
-            /*statusLabel.setText("Images processed: " + (i + 1) + "/" + numImages);
-            f.update(f.getGraphics());*/
-            //statusLabel.update(statusLabel.getGraphics());
+            Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + numImages);
         }
 
         writer.close();
@@ -83,10 +83,9 @@ public class GifController {
         numActiveThreads = 0;
         numImagesCreated = 0;
 
-        /*statusLabel.setText("GIF Created!");
-        f.update(f.getGraphics());*/
+        Main.updateStatusLabel("GIF Created!");
 
-        System.out.println((System.nanoTime() - startTime) / 1000000000);
+        System.out.println("Time elapsed: " + ((System.nanoTime() - startTime) / 1000000000) + " seconds");
     }
 
     /**
@@ -146,8 +145,8 @@ public class GifController {
         for (int i = 1; i < numImages; i++) {
             writer.writeToSequence(images.get(i));
             System.out.println("Images processed: " + (i + 1) + "/" + numImages);
-            /*statusLabel.setText("Images processed: " + (i + 1) + "/" + numImages);
-            f.update(f.getGraphics());*/
+            Main.getStatusLabel().setText("Images processed: " + (i + 1) + "/" + numImages);
+            Main.getFrame().update(Main.getFrame().getGraphics());
             //statusLabel.update(statusLabel.getGraphics());
         }
 
@@ -159,8 +158,8 @@ public class GifController {
         numActiveThreads = 0;
         numImagesCreated = 0;
 
-        /*statusLabel.setText("GIF Created!");
-        f.update(f.getGraphics());*/
+        Main.getStatusLabel().setText("GIF Created!");
+        Main.getFrame().update(Main.getFrame().getGraphics());
 
         System.out.println((System.nanoTime() - startTime) / 1000000000);
     }
@@ -174,8 +173,8 @@ public class GifController {
         ImageOutputStream output = new FileImageOutputStream(new File(fileName));
         GifSequenceWriter writer = new GifSequenceWriter(output, img1.getType(), 10, true);
         writer.writeToSequence(img1);
-        Main.getStatusLabel().setText("Images processed: " + (1) + "/" + numImages);
-        Main.getFrame().update(Main.getFrame().getGraphics());
+        /*Main.getStatusLabel().setText("Images processed: " + (1) + "/" + numImages);
+        Main.getFrame().update(Main.getFrame().getGraphics());*/
         System.out.println("Images processed: " + (1) + "/" + numImages);
 
         for (int i = 1; i < numImages; i++) {
@@ -189,8 +188,8 @@ public class GifController {
         writer.close();
         output.close();
 
-        Main.getStatusLabel().setText("GIF Created!");
-        Main.getFrame().update(Main.getFrame().getGraphics());
+        /*Main.getStatusLabel().setText("GIF Created!");
+        Main.getFrame().update(Main.getFrame().getGraphics());*/
 
         System.out.println("Sequential GIF creator: " + ((System.nanoTime() - startTime) / 1000000000));
     }

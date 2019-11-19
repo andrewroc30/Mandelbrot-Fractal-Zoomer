@@ -3,12 +3,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.util.concurrent.locks.*;
 
 public class Main {
 
     private static JLabel statusLabel = new JLabel();
     private static JFrame f = new JFrame("Mandelbrot Image Zoomer");
     private static boolean isPaused = true;
+    public static ReentrantLock arrayPushLock = new ReentrantLock();
+    public static ReentrantLock numThreadsLock = new ReentrantLock();
 
     //Good point: (-.74364386269, .13182590271)
     //Good point: (0.001643721971153, 0.822467633298876)
@@ -50,6 +53,16 @@ public class Main {
      */
     public static void setIsPaused(boolean set) {
         isPaused = set;
+    }
+
+    /**
+     * Updates the UI Status Label with the given String
+     * @param status The new status to set the UI Status Label to
+     */
+    public static void updateStatusLabel(String status) {
+        System.out.println(status);
+        statusLabel.setText(status);
+        f.update(f.getGraphics());
     }
 
     /**
@@ -137,8 +150,8 @@ public class Main {
                     int numImages = Integer.parseInt(numImagesText.getText());
                     int iterations = Integer.parseInt(iterationsText.getText());
                     double initialZoom = Double.parseDouble(initialZoomText.getText());
-                    GifController.makeGif(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
-                    //GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+                    //GifController.makeGif(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
+                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 4);
                     //GifController.makeGifWithThreadsAutoIterations(numImages, 1920, 1080, initialZoom, zoomFactor, x, y);
                 } catch (Exception e) {
                     System.out.println("GIF Creation Failed!");
