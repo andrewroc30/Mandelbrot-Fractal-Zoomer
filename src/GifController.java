@@ -28,7 +28,8 @@ public class GifController {
      * @throws Exception
      */
     public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                          double zoomFactor, double x, double y, int maxThreads) throws Exception {
+                                          double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
+        //CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         numImagesToCreate = numImages;
         long startTime = System.nanoTime();
         ThreadedImageCreator t;
@@ -37,17 +38,15 @@ public class GifController {
             while(numActiveThreads >= maxThreads) {
                 Thread.sleep(10);
             }
-            t = new ThreadedImageCreator(Integer.toString(width) + "," + Integer.toString(height) + "," +
-                    Integer.toString(iterations) + "," + Double.toString(zoom) + "," + Double.toString(x) + "," +
-                    Double.toString(y));
+            t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
             t.start();
             zoom = zoom * zoomFactor;
         }
-
         while (numImagesCreated < numImages) {
             TimeUnit.MILLISECONDS.sleep(10);
         }
 
+        //SORT THE IMAGES SO THEY ARE IN ORDER BY ZOOM
         System.out.println("Starting sorting");
         double smallestZoom;
         int smallestIndex;
@@ -65,26 +64,24 @@ public class GifController {
         }
         System.out.println("Finished sorting");
 
+        //WRITE IMAGES TO GIF
         ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
-        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), 10, true);
+        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timeBetweenFramesMS, true);
         writer.writeToSequence(images.get(0));
-        System.out.println("Images processed: " + 1 + "/" + numImages);
-
+        Main.updateStatusLabel("Images processed: " + 1 + "/" + numImages);
         for (int i = 1; i < numImages; i++) {
             writer.writeToSequence(images.get(i));
             Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + numImages);
         }
 
+        //CLEANUP
         writer.close();
         output.close();
-
         images = new ArrayList<>();
         unorderedImages = new ArrayList<>();
         numActiveThreads = 0;
         numImagesCreated = 0;
-
         Main.updateStatusLabel("GIF Created!");
-
         System.out.println("Time elapsed: " + ((System.nanoTime() - startTime) / 1000000000) + " seconds");
     }
 

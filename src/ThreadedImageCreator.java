@@ -36,7 +36,7 @@ public class ThreadedImageCreator implements Runnable {
                 changeNumThreads(false);
             }
         } catch (Error e) {
-            System.out.println("Thing ran out of space!");
+            System.out.println("Thread ran out of space, try decreasing max thread count!");
         }
     }
 

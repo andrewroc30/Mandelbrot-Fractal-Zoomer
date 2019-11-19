@@ -42,7 +42,6 @@ public class ImageController {
                 else image.setRGB(col, row, black);
             }
         }
-        //System.out.println("Image created!");
         return image;
     }
 

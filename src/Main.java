@@ -66,6 +66,18 @@ public class Main {
     }
 
     /**
+     * Converts the given frames per second into ms between frames
+     * @param fps
+     * @return
+     */
+    private static int fpsToMs(int fps) {
+        if (fps == 0) {
+            return 10;
+        }
+        return 1000 / fps;
+    }
+
+    /**
      * Shows the UI for the program and handles input
      */
     private static void showStartUI() {
@@ -117,6 +129,13 @@ public class Main {
         initialZoomText.setBounds(300, 235, 130, 25);
         initialZoomText.setText("1");
 
+        JLabel timeBetweenFramesLabel = new JLabel();
+        timeBetweenFramesLabel.setText("Enter Frames Per Second");
+        timeBetweenFramesLabel.setBounds(50, 135, 500, 300);
+        JTextField timeBetweenFramesText = new JTextField();
+        timeBetweenFramesText.setBounds(300, 270, 130, 25);
+        timeBetweenFramesText.setText("30");
+
         statusLabel.setBounds(160, 200, 500, 300);
 
         f.add(xLabel);
@@ -131,6 +150,8 @@ public class Main {
         f.add(iterationsText);
         f.add(initialZoomLabel);
         f.add(initialZoomText);
+        f.add(timeBetweenFramesLabel);
+        f.add(timeBetweenFramesText);
         f.add(statusLabel);
         f.add(gif);
         f.add(img);
@@ -150,8 +171,9 @@ public class Main {
                     int numImages = Integer.parseInt(numImagesText.getText());
                     int iterations = Integer.parseInt(iterationsText.getText());
                     double initialZoom = Double.parseDouble(initialZoomText.getText());
+                    int timeBetweenFramesMS = fpsToMs(Integer.parseInt(timeBetweenFramesText.getText()));
                     //GifController.makeGif(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
-                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 4);
+                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 4, timeBetweenFramesMS);
                     //GifController.makeGifWithThreadsAutoIterations(numImages, 1920, 1080, initialZoom, zoomFactor, x, y);
                 } catch (Exception e) {
                     System.out.println("GIF Creation Failed!");
@@ -170,9 +192,7 @@ public class Main {
                     double initialZoom = Double.parseDouble(initialZoomText.getText());
                     ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
                             "png", new File("images/mandelbrot.png"));
-                    statusLabel.setText("Image created!");
-                    //f.update(f.getGraphics());
-                    f.repaint();
+                    updateStatusLabel("Image created!");
                 } catch (Exception e) {
                     System.out.println("Image Creation Failed!");
                 }
