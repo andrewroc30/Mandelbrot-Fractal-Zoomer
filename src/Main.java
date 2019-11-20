@@ -3,7 +3,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.*;
+
+//Command to convert GIF to mp4 on Linux/Mac
+//ffmpeg -i mandelbrotThreaded.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video.mp4
 
 public class Main {
 
@@ -67,8 +72,8 @@ public class Main {
 
     /**
      * Converts the given frames per second into ms between frames
-     * @param fps
-     * @return
+     * @param fps The frames per second of the GIF
+     * @return Integer containing number of milliseconds between frames
      */
     private static int fpsToMs(int fps) {
         if (fps == 0) {
@@ -78,14 +83,18 @@ public class Main {
     }
 
     /**
-     * Shows the UI for the program and handles input
+     * Returns all of the elements in the JFrame
      */
-    private static void showStartUI() {
-        JButton gif = new JButton("Create GIF");
-        gif.setBounds(50, 400, 150, 50);
+    public static Map<String, JComponent> getElements() {
+        HashMap<String, JComponent> elements = new HashMap<>();
 
-        JButton img = new JButton("Create PNG");
-        img.setBounds(250, 400, 150, 50);
+        JButton gifButton = new JButton("Create GIF");
+        gifButton.setBounds(50, 400, 150, 50);
+        elements.put("gifButton", gifButton);
+
+        JButton imgButton = new JButton("Create PNG");
+        imgButton.setBounds(250, 400, 150, 50);
+        elements.put("imgButton", imgButton);
 
         JLabel xLabel = new JLabel();
         xLabel.setText("Enter X-Coordinate (between -2 and 2)");
@@ -93,6 +102,8 @@ public class Main {
         JTextField xText = new JTextField();
         xText.setBounds(300, 50, 130, 25);
         xText.setText("-.74364386269");
+        elements.put("xLabel", xLabel);
+        elements.put("xText", xText);
 
         JLabel yLabel = new JLabel();
         yLabel.setText("Enter Y-Coordinate (between -2 and 2)");
@@ -100,6 +111,8 @@ public class Main {
         JTextField yText = new JTextField();
         yText.setBounds(300, 85, 130, 25);
         yText.setText(".13182590271");
+        elements.put("yLabel", yLabel);
+        elements.put("yText", yText);
 
         JLabel zoomFactorLabel = new JLabel();
         zoomFactorLabel.setText("Enter Zoom Factor");
@@ -107,6 +120,8 @@ public class Main {
         JTextField zoomFactorText = new JTextField();
         zoomFactorText.setBounds(300, 125, 130, 25);
         zoomFactorText.setText("1.5");
+        elements.put("zoomFactorLabel", zoomFactorLabel);
+        elements.put("zoomFactorText", zoomFactorText);
 
         JLabel numImagesLabel = new JLabel();
         numImagesLabel.setText("Enter Number of Images");
@@ -114,6 +129,8 @@ public class Main {
         JTextField numImagesText = new JTextField();
         numImagesText.setBounds(300, 160, 130, 25);
         numImagesText.setText("5");
+        elements.put("numImagesLabel", numImagesLabel);
+        elements.put("numImagesText", numImagesText);
 
         JLabel iterationsLabel = new JLabel();
         iterationsLabel.setText("Enter Iterations");
@@ -121,6 +138,8 @@ public class Main {
         JTextField iterationsText = new JTextField();
         iterationsText.setBounds(300, 200, 130, 25);
         iterationsText.setText("1000");
+        elements.put("iterationsLabel", iterationsLabel);
+        elements.put("iterationsText", iterationsText);
 
         JLabel initialZoomLabel = new JLabel();
         initialZoomLabel.setText("Enter Initial Zoom");
@@ -128,6 +147,8 @@ public class Main {
         JTextField initialZoomText = new JTextField();
         initialZoomText.setBounds(300, 235, 130, 25);
         initialZoomText.setText("1");
+        elements.put("initialZoomLabel", initialZoomLabel);
+        elements.put("initialZoomText", initialZoomText);
 
         JLabel timeBetweenFramesLabel = new JLabel();
         timeBetweenFramesLabel.setText("Enter Frames Per Second");
@@ -135,61 +156,63 @@ public class Main {
         JTextField timeBetweenFramesText = new JTextField();
         timeBetweenFramesText.setBounds(300, 270, 130, 25);
         timeBetweenFramesText.setText("30");
+        elements.put("timeBetweenFramesLabel", timeBetweenFramesLabel);
+        elements.put("timeBetweenFramesText", timeBetweenFramesText);
 
         statusLabel.setBounds(160, 200, 500, 300);
+        elements.put("statusLabel", statusLabel);
 
-        f.add(xLabel);
-        f.add(xText);
-        f.add(yLabel);
-        f.add(yText);
-        f.add(zoomFactorLabel);
-        f.add(zoomFactorText);
-        f.add(numImagesLabel);
-        f.add(numImagesText);
-        f.add(iterationsLabel);
-        f.add(iterationsText);
-        f.add(initialZoomLabel);
-        f.add(initialZoomText);
-        f.add(timeBetweenFramesLabel);
-        f.add(timeBetweenFramesText);
-        f.add(statusLabel);
-        f.add(gif);
-        f.add(img);
+        return elements;
+    }
+
+    /**
+     * Configure the JFrame with all elements
+     */
+    public static void configureFrame(Map<String, JComponent> elements) {
+        for (Map.Entry j : elements.entrySet()) {
+            f.add((JComponent)j.getValue());
+        }
         f.setSize(500, 500);
         f.setLayout(null);
         f.setVisible(true);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
 
-        gif.addActionListener(new ActionListener() {
+    /**
+     * Shows the UI for the program and handles input
+     */
+    private static void showStartUI() {
+        Map<String, JComponent> elements = getElements();
+        configureFrame(elements);
+
+        ((JButton)elements.get("gifButton")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 System.out.println("Button Pressed");
                 try {
-                    double x = Double.parseDouble(xText.getText());
-                    double y = Double.parseDouble(yText.getText());
-                    double zoomFactor = Double.parseDouble(zoomFactorText.getText());
-                    int numImages = Integer.parseInt(numImagesText.getText());
-                    int iterations = Integer.parseInt(iterationsText.getText());
-                    double initialZoom = Double.parseDouble(initialZoomText.getText());
-                    int timeBetweenFramesMS = fpsToMs(Integer.parseInt(timeBetweenFramesText.getText()));
-                    //GifController.makeGif(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y);
-                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 4, timeBetweenFramesMS);
-                    //GifController.makeGifWithThreadsAutoIterations(numImages, 1920, 1080, initialZoom, zoomFactor, x, y);
+                    double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+                    double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+                    double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
+                    int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
+                    int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+                    double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                    int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
+                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, timeBetweenFramesMS);
                 } catch (Exception e) {
                     System.out.println("GIF Creation Failed!");
                 }
             }
         });
 
-        img.addActionListener(new ActionListener() {
+        ((JButton)elements.get("imgButton")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 System.out.println("Button Pressed");
                 try {
-                    double x = Double.parseDouble(xText.getText());
-                    double y = Double.parseDouble(yText.getText());
-                    int iterations = Integer.parseInt(iterationsText.getText());
-                    double initialZoom = Double.parseDouble(initialZoomText.getText());
+                    double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+                    double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+                    int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+                    double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                     ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
                             "png", new File("images/mandelbrot.png"));
                     updateStatusLabel("Image created!");

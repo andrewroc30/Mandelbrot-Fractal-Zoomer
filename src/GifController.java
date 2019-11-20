@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.log;
 
 public class GifController {
@@ -16,41 +17,43 @@ public class GifController {
     public static int numImagesToCreate = 0;
 
     /**
-     * Creates a Mandelbrot GIF using the given settings
-     * @param numImages The total number of images in the GIF
-     * @param width The width in pixels of the GIF
-     * @param height The height in pixels of the GIF
+     * Creates the images using threads
+     *
+     * @param width      The width in pixels of the GIF
+     * @param height     The height in pixels of the GIF
      * @param iterations The number if iterations used to determine a single pixel (higher iterations means better image)
-     * @param zoom The starting zoom for the GIF
+     * @param zoom       The starting zoom for the GIF
      * @param zoomFactor The factor by which the zoom is increased every image in the GIF
-     * @param x The x-coordinate to zoom into
-     * @param y The y-coordinate to zoom into
+     * @param x          The x-coordinate to zoom into
+     * @param y          The y-coordinate to zoom into
+     * @param maxThreads The maximum number of threads that can be active at once
      * @throws Exception
      */
-    public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                          double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
-        //CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
-        numImagesToCreate = numImages;
-        long startTime = System.nanoTime();
+    public static void createImagesThreaded(int width, int height, int iterations, double zoom,
+                                            double zoomFactor, double x, double y, int maxThreads) throws Exception {
         ThreadedImageCreator t;
-        for (int i = 0; i < numImages; i++) {
+        for (int i = 0; i < numImagesToCreate; i++) {
             //Wait until there is another space for the thread to be made
-            while(numActiveThreads >= maxThreads) {
+            while (numActiveThreads >= maxThreads) {
                 Thread.sleep(10);
             }
             t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
             t.start();
             zoom = zoom * zoomFactor;
         }
-        while (numImagesCreated < numImages) {
+        while (numImagesCreated < numImagesToCreate) {
             TimeUnit.MILLISECONDS.sleep(10);
         }
+    }
 
-        //SORT THE IMAGES SO THEY ARE IN ORDER BY ZOOM
+    /**
+     * Sorts all the images created by the threads
+     */
+    public static void sortImages() {
         System.out.println("Starting sorting");
         double smallestZoom;
         int smallestIndex;
-        while (images.size() < numImages) {
+        while (images.size() < numImagesToCreate) {
             smallestZoom = Double.MAX_VALUE;
             smallestIndex = 0;
             for (int i = 0; i < unorderedImages.size(); i++) {
@@ -63,44 +66,87 @@ public class GifController {
             unorderedImages.remove(smallestIndex);
         }
         System.out.println("Finished sorting");
+    }
 
-        //WRITE IMAGES TO GIF
-        ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
-        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timeBetweenFramesMS, true);
-        writer.writeToSequence(images.get(0));
-        Main.updateStatusLabel("Images processed: " + 1 + "/" + numImages);
-        for (int i = 1; i < numImages; i++) {
-            writer.writeToSequence(images.get(i));
-            Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + numImages);
-        }
-
-        //CLEANUP
-        writer.close();
-        output.close();
+    /**
+     * Cleans up loose ends so another GIF can be created
+     */
+    public static void cleanup() {
         images = new ArrayList<>();
         unorderedImages = new ArrayList<>();
         numActiveThreads = 0;
         numImagesCreated = 0;
+    }
+
+    /**
+     * Writes the images to a GIF
+     *
+     * @param timeBetweenFramesMS The number of milliseconds between frames
+     * @throws Exception
+     */
+    public static void writeToGif(int timeBetweenFramesMS) throws Exception {
+        ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
+        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timeBetweenFramesMS, true);
+        writer.writeToSequence(images.get(0));
+        Main.updateStatusLabel("Images processed: " + 1 + "/" + numImagesToCreate);
+        for (int i = 1; i < numImagesToCreate; i++) {
+            writer.writeToSequence(images.get(i));
+            Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + numImagesToCreate);
+        }
+        writer.close();
+        output.close();
+    }
+
+    /**
+     * Creates a Mandelbrot GIF with threads using the given settings
+     *
+     * @param numImages           The total number of images in the GIF
+     * @param width               The width in pixels of the GIF
+     * @param height              The height in pixels of the GIF
+     * @param iterations          The number if iterations used to determine a single pixel (higher iterations means better image)
+     * @param zoom                The starting zoom for the GIF
+     * @param zoomFactor          The factor by which the zoom is increased every image in the GIF
+     * @param x                   The x-coordinate to zoom into
+     * @param y                   The y-coordinate to zoom into
+     * @param maxThreads          The maximum number of threads that can be active at once
+     * @param timeBetweenFramesMS The number of milliseconds between frames
+     * @throws Exception
+     */
+    public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
+                                          double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
+        long startTime = System.nanoTime();
+        numImagesToCreate = numImages;
+        // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
+        createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
+        // SORT THE IMAGES SO THEY ARE IN ORDER BY ZOOM
+        sortImages();
+        // WRITE IMAGES TO GIF
+        writeToGif(timeBetweenFramesMS);
+        // CLEANUP
+        cleanup();
         Main.updateStatusLabel("GIF Created!");
         System.out.println("Time elapsed: " + ((System.nanoTime() - startTime) / 1000000000) + " seconds");
     }
 
     /**
      * Creates a Mandelbrot GIF using the given settings, but automatically sets iterations
-     * @param numImages The total number of images in the GIF
-     * @param width The width in pixels of the GIF
-     * @param height The height in pixels of the GIF
-     * @param zoom The starting zoom for the GIF
+     *
+     * @param numImages  The total number of images in the GIF
+     * @param width      The width in pixels of the GIF
+     * @param height     The height in pixels of the GIF
+     * @param zoom       The starting zoom for the GIF
      * @param zoomFactor The factor by which the zoom is increased every image in the GIF
-     * @param x The x-coordinate to zoom into
-     * @param y The y-coordinate to zoom into
+     * @param x          The x-coordinate to zoom into
+     * @param y          The y-coordinate to zoom into
+     * @param timeBetweenFramesMS The number of milliseconds between frames
      * @throws Exception
      */
     public static void makeGifWithThreadsAutoIterations(int numImages, int width, int height, double zoom,
-                                                        double zoomFactor, double x, double y) throws Exception {
-        numImagesToCreate = numImages;
-        int iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
+                                                        double zoomFactor, double x, double y, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
+        numImagesToCreate = numImages;
+        // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
+        int iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
         ThreadedImageCreator t;
         for (int i = 0; i < numImages; i++) {
             System.out.println(iterations);
@@ -111,53 +157,17 @@ public class GifController {
             t.start();
             zoom = zoom * zoomFactor;
         }
-
         while (numImagesCreated < numImagesToCreate) {
             TimeUnit.MILLISECONDS.sleep(10);
         }
 
-        System.out.println("Starting sorting");
-        double smallestZoom;
-        int smallestIndex;
-        while (images.size() < numImages) {
-            smallestZoom = Double.MAX_VALUE;
-            smallestIndex = 0;
-            for (int i = 0; i < unorderedImages.size(); i++) {
-                if (unorderedImages.get(i).getZoom() < smallestZoom) {
-                    smallestIndex = i;
-                    smallestZoom = unorderedImages.get(i).getZoom();
-                }
-            }
-            images.add(unorderedImages.get(smallestIndex).image);
-            //System.out.println("Image " + images.size() + " has zoom " + unorderedImages.get(smallestIndex).zoom);
-            unorderedImages.remove(smallestIndex);
-        }
-        System.out.println("Finished sorting");
-
-        ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
-        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), 5, true);
-        writer.writeToSequence(images.get(0));
-        System.out.println("Images processed: " + 1 + "/" + numImages);
-
-        for (int i = 1; i < numImages; i++) {
-            writer.writeToSequence(images.get(i));
-            System.out.println("Images processed: " + (i + 1) + "/" + numImages);
-            Main.getStatusLabel().setText("Images processed: " + (i + 1) + "/" + numImages);
-            Main.getFrame().update(Main.getFrame().getGraphics());
-            //statusLabel.update(statusLabel.getGraphics());
-        }
-
-        writer.close();
-        output.close();
-
-        images = new ArrayList<>();
-        unorderedImages = new ArrayList<>();
-        numActiveThreads = 0;
-        numImagesCreated = 0;
-
-        Main.getStatusLabel().setText("GIF Created!");
-        Main.getFrame().update(Main.getFrame().getGraphics());
-
+        // SORT THE IMAGES SO THEY ARE IN ORDER BY ZOOM
+        sortImages();
+        // WRITE IMAGES TO GIF
+        writeToGif(timeBetweenFramesMS);
+        // CLEANUP
+        cleanup();
+        Main.updateStatusLabel("GIF Created!");
         System.out.println((System.nanoTime() - startTime) / 1000000000);
     }
 
@@ -170,8 +180,6 @@ public class GifController {
         ImageOutputStream output = new FileImageOutputStream(new File(fileName));
         GifSequenceWriter writer = new GifSequenceWriter(output, img1.getType(), 10, true);
         writer.writeToSequence(img1);
-        /*Main.getStatusLabel().setText("Images processed: " + (1) + "/" + numImages);
-        Main.getFrame().update(Main.getFrame().getGraphics());*/
         System.out.println("Images processed: " + (1) + "/" + numImages);
 
         for (int i = 1; i < numImages; i++) {
@@ -184,9 +192,6 @@ public class GifController {
 
         writer.close();
         output.close();
-
-        /*Main.getStatusLabel().setText("GIF Created!");
-        Main.getFrame().update(Main.getFrame().getGraphics());*/
 
         System.out.println("Sequential GIF creator: " + ((System.nanoTime() - startTime) / 1000000000));
     }

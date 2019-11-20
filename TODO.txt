@@ -8,6 +8,8 @@ GENERAL:
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
  - Be able to watch GIF or see image in window, not just save to file
+ - Be able to save directly to mp4
+ - Save images to file first, so that we don't have to store all images in memory
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter

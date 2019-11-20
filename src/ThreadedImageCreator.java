@@ -1,7 +1,10 @@
+import javax.imageio.ImageIO;
+import java.io.File;
+
 public class ThreadedImageCreator implements Runnable {
     private Thread t;
+    private File outputFile;
     private String inputStr;
-
     private int width;
     private int height;
     private int iterations;
@@ -18,6 +21,8 @@ public class ThreadedImageCreator implements Runnable {
         this.zoom = Double.valueOf(inputs[3]);
         this.x = Double.valueOf(inputs[4]);
         this.y = Double.valueOf(inputs[5]);
+        this.outputFile = new File("" + this.zoom);
+
     }
 
     public void run() {
@@ -27,6 +32,7 @@ public class ThreadedImageCreator implements Runnable {
             try {
                 Main.arrayPushLock.lock();
                 GifController.unorderedImages.add(image);
+                //ImageIO.write(image.getImage(), "jpg", outputFile);
                 GifController.numImagesCreated++;
                 Main.updateStatusLabel("Images created: " + (GifController.numImagesCreated) + "/" + GifController.numImagesToCreate);
             } catch (Exception e) {
@@ -36,7 +42,7 @@ public class ThreadedImageCreator implements Runnable {
                 changeNumThreads(false);
             }
         } catch (Error e) {
-            System.out.println("Thread ran out of space, try decreasing max thread count!");
+            System.out.println("Ran out of space!  Files of this size not yet supported");
         }
     }
 
