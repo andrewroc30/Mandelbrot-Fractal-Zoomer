@@ -1,17 +1,18 @@
+import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.log;
 
 public class GifController {
 
-    public static ArrayList<BufferedImage> images = new ArrayList<>();
-    public static ArrayList<ImageWithZoom> unorderedImages = new ArrayList<>();
     public static int numImagesCreated = 0;
     public static int numActiveThreads = 0;
     public static int numImagesToCreate = 0;
@@ -47,50 +48,93 @@ public class GifController {
     }
 
     /**
-     * Sorts all the images created by the threads
-     */
-    public static void sortImages() {
-        System.out.println("Starting sorting");
-        double smallestZoom;
-        int smallestIndex;
-        while (images.size() < numImagesToCreate) {
-            smallestZoom = Double.MAX_VALUE;
-            smallestIndex = 0;
-            for (int i = 0; i < unorderedImages.size(); i++) {
-                if (unorderedImages.get(i).getZoom() < smallestZoom) {
-                    smallestIndex = i;
-                    smallestZoom = unorderedImages.get(i).getZoom();
-                }
-            }
-            images.add(unorderedImages.get(smallestIndex).image);
-            unorderedImages.remove(smallestIndex);
-        }
-        System.out.println("Finished sorting");
-    }
-
-    /**
      * Cleans up loose ends so another GIF can be created
      */
     public static void cleanup() {
-        images = new ArrayList<>();
-        unorderedImages = new ArrayList<>();
         numActiveThreads = 0;
         numImagesCreated = 0;
+
+        File dir = new File("tempImages");
+        for(File file: dir.listFiles())
+            if (!file.isDirectory())
+                file.delete();
     }
 
     /**
-     * Writes the images to a GIF
+     * Converts the number to a proper format for file naming convention
      *
-     * @param timeBetweenFramesMS The number of milliseconds between frames
+     * @param count The number which needs to be converted
+     * @return The converted number as a String wiht proper number of leading 0's
+     */
+    public static String convertNumToStr(int count) {
+        int maxStrLen = String.valueOf(numImagesToCreate).length();
+        int curStrLen = String.valueOf(count).length();
+        int diff = maxStrLen - curStrLen;
+        String answer = "";
+        for (int i = 0; i < diff; i++) {
+            answer = answer + "0";
+        }
+        answer = answer + count;
+        return answer;
+    }
+
+    /**
+     * Converts all of the filenames of the images
+     *
+     * @return ArrayList containing all of the Files
+     */
+    public static ArrayList<File> convertImageNames() {
+        //GET ALL IMAGE NAMES
+        ArrayList<String> imgLst = new ArrayList<>();
+        String fName;
+        File dir = new File("tempImages");
+        for(File file: dir.listFiles()) {
+            if (!file.isDirectory()) {
+                fName = file.getName();
+                imgLst.add(fName.substring(0,fName.length() - 4));
+            }
+        }
+        //SORT THE IMAGE NAMES BY THEIR ZOOM
+        ArrayList<Double> doubles = new ArrayList<>();
+        for (String s : imgLst) {
+            doubles.add(Double.valueOf(s));
+        }
+        Collections.sort(doubles);
+        //RENAME THE IMAGES BY THEIR SORTED VALUES
+        ArrayList<File> newFiles = new ArrayList<>();
+        int count = 1;
+        for (double d : doubles) {
+            File oldFile = new File("tempImages/" + d + ".png");
+            File newFile = new File("tempImages/" + convertNumToStr(count) + ".png");
+            try {
+                Files.move(oldFile.toPath(), newFile.toPath());
+                newFiles.add(newFile);
+            } catch (IOException e) {
+                System.out.println("RENAME FAILED");
+            }
+            count++;
+        }
+        return newFiles;
+    }
+
+    /**
+     * Writes the created images into a GIF
+     *
+     * @param timeBetweenFramesMS Time between frames in the GIF
+     * @param files ArrayList of Files to write to GIF
      * @throws Exception
      */
-    public static void writeToGif(int timeBetweenFramesMS) throws Exception {
+    public static void writeToGif(int timeBetweenFramesMS, ArrayList<File> files) throws Exception {
+        //CONVERT TO BUFFEREDIMAGES
+        ArrayList<BufferedImage> imgs = new ArrayList<>();
+        for (File f : files) {
+            imgs.add(ImageIO.read(f));
+        }
+        //WRITE TO GIF
         ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
-        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timeBetweenFramesMS, true);
-        writer.writeToSequence(images.get(0));
-        Main.updateStatusLabel("Images processed: " + 1 + "/" + numImagesToCreate);
-        for (int i = 1; i < numImagesToCreate; i++) {
-            writer.writeToSequence(images.get(i));
+        GifSequenceWriter writer = new GifSequenceWriter(output, imgs.get(0).getType(), timeBetweenFramesMS, true);
+        for (int i = 0; i < numImagesToCreate; i++) {
+            writer.writeToSequence(imgs.get(i));
             Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + numImagesToCreate);
         }
         writer.close();
@@ -116,12 +160,12 @@ public class GifController {
                                           double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
+        // CLEANUP
+        cleanup();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
-        // SORT THE IMAGES SO THEY ARE IN ORDER BY ZOOM
-        sortImages();
         // WRITE IMAGES TO GIF
-        writeToGif(timeBetweenFramesMS);
+        writeToGif(timeBetweenFramesMS, convertImageNames());
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("GIF Created!");
@@ -145,6 +189,8 @@ public class GifController {
                                                         double zoomFactor, double x, double y, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
+        // CLEANUP
+        cleanup();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         int iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
         ThreadedImageCreator t;
@@ -161,10 +207,8 @@ public class GifController {
             TimeUnit.MILLISECONDS.sleep(10);
         }
 
-        // SORT THE IMAGES SO THEY ARE IN ORDER BY ZOOM
-        sortImages();
-        // WRITE IMAGES TO GIF
-        writeToGif(timeBetweenFramesMS);
+        // WRITE IMAGES TO VIDEO
+        writeToGif(timeBetweenFramesMS, convertImageNames());
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("GIF Created!");

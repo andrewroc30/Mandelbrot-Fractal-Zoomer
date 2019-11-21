@@ -21,7 +21,7 @@ public class ThreadedImageCreator implements Runnable {
         this.zoom = Double.valueOf(inputs[3]);
         this.x = Double.valueOf(inputs[4]);
         this.y = Double.valueOf(inputs[5]);
-        this.outputFile = new File("" + this.zoom);
+        this.outputFile = new File("tempImages/" + this.zoom + ".png");
 
     }
 
@@ -31,8 +31,7 @@ public class ThreadedImageCreator implements Runnable {
             ImageWithZoom image = new ImageWithZoom(ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y), zoom);
             try {
                 Main.arrayPushLock.lock();
-                GifController.unorderedImages.add(image);
-                //ImageIO.write(image.getImage(), "jpg", outputFile);
+                ImageIO.write(image.getImage(), "png", outputFile);
                 GifController.numImagesCreated++;
                 Main.updateStatusLabel("Images created: " + (GifController.numImagesCreated) + "/" + GifController.numImagesToCreate);
             } catch (Exception e) {

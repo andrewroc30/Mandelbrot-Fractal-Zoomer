@@ -10,6 +10,9 @@ import java.util.concurrent.locks.*;
 //Command to convert GIF to mp4 on Linux/Mac
 //ffmpeg -i mandelbrotThreaded.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video.mp4
 
+//Command to convert JPegs to mp4 on Linux/Mac
+//ffmpeg -framerate 30 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mp4
+
 public class Main {
 
     private static JLabel statusLabel = new JLabel();
@@ -190,6 +193,12 @@ public class Main {
             public void actionPerformed(ActionEvent arg0) {
                 System.out.println("Button Pressed");
                 try {
+                    File tempImagesDir = new File("tempImages");
+                    if(tempImagesDir.mkdir()){
+                        System.out.println("Directory created successfully");
+                    }else{
+                        System.out.println("Sorry couldn’t create specified directory");
+                    }
                     double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
                     double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
                     double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());

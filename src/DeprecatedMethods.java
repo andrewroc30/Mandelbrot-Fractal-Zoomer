@@ -72,7 +72,7 @@
 //        int numImages = 10;
 //        String fileName;
 //        for (int i = 0; i < numImages; i++) {
-//            fileName = "images/mandelbrot" + i + ".jpg";
+//            fileName = "images/mandelbrot" + i + ".png";
 //            writeToFile(ImageController.createZoomedImage(1920, 1080, 1000, zoom, 0.001643721971153, 0.822467633298876), fileName);
 //            zoom = zoom * 2;
 //        }
@@ -91,6 +91,6 @@
 //
 //
 //    public static void writeToFile(BufferedImage img, String pathName) throws Exception {
-//        ImageIO.write(img, "jpg", new File(pathName));
+//        ImageIO.write(img, "png", new File(pathName));
 //    }
 //}
