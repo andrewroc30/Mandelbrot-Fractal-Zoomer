@@ -13,6 +13,7 @@ GENERAL:
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter
+   - Possibly try to see if percentage of points that are black is higher than the last image?  Pretty crude though...
  - Could try to memoize points maybe... (unlikely to work or be effective)
  - Many optimizations here:  https://en.wikipedia.org/wiki/Mandelbrot_set
 

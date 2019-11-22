@@ -8,16 +8,15 @@ public class ImageController {
 
     /**
      * Returns an image of the Mandelbrot set with the given zoom
-     * @param w The width in pixels of the image
-     * @param h The height in pixels of the image
-     * @param m The maximum number of iterations per pixel
+     * @param width The width in pixels of the image
+     * @param height The height in pixels of the image
+     * @param max The maximum number of iterations per pixel
      * @param zoom The zoom of the image
      * @param x_coord The x-coordinate of the center of the image
      * @param y_coord The y-coordinate of the center of the image
      * @return BufferedImage of the zoomed in image of the Mandelbrot set
      */
-    public static BufferedImage createZoomedImage(int w, int h, int m, double zoom, double x_coord, double y_coord) {
-        int width = w, height = h, max = m;
+    public static BufferedImage createZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         int black = 0;
@@ -26,14 +25,26 @@ public class ImageController {
             colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
         }
 
+        double x0, y0, x, y, xTemp;
+
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                double x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
-                double y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
-                double x = 0, y = 0;
+                x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
+                y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
+
+                //Cardioid checking
+                double lessX = (x0 - 0.25);
+                double ySquare = y0 * y0;
+                double q = (lessX * lessX) + ySquare;
+                if (q * (q + lessX) <= 0.25 * ySquare) {
+                    continue;
+                }
+
+                x = 0;
+                y = 0;
                 int iteration = 0;
                 while (x * x + y * y < 2 * 2 && iteration < max) {
-                    double xTemp = x * x - y * y + x0;
+                    xTemp = x * x - y * y + x0;
                     y = 2 * x * y + y0;
                     x = xTemp;
                     iteration++;

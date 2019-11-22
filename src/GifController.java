@@ -142,12 +142,34 @@ public class GifController {
     }
 
     /**
-     * Creates a Mandelbrot GIF with threads using the given settings
+     * Writes all of the created images to an MP4
+     *
+     * @param fps The frames per second of the video
+     */
+    public static void writeToMp4(int fps) {
+        if (OSValidator.isMac() || OSValidator.isUnix()) {
+            try {
+                Main.updateStatusLabel("Creating MP4");
+                ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-pattern_type", "glob", "-i", "*.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
+                builder.directory(new File(Main.tempImageDirPath));
+                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+                Process createVideo = builder.start();
+                createVideo.waitFor();
+            } catch (Exception e) {
+                System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Creates a Mandelbrot GIF with threads
      *
      * @param numImages           The total number of images in the GIF
      * @param width               The width in pixels of the GIF
      * @param height              The height in pixels of the GIF
-     * @param iterations          The number if iterations used to determine a single pixel (higher iterations means better image)
+     * @param iterations          The number of iterations used to determine a single pixel (higher iterations means better image)
      * @param zoom                The starting zoom for the GIF
      * @param zoomFactor          The factor by which the zoom is increased every image in the GIF
      * @param x                   The x-coordinate to zoom into
@@ -172,23 +194,21 @@ public class GifController {
         System.out.println("Time elapsed: " + ((System.nanoTime() - startTime) / 1000000000) + " seconds");
     }
 
-    public static void writeToMp4(int fps, ArrayList<File> files) {
-        if (OSValidator.isMac() || OSValidator.isUnix()) {
-            try {
-                Main.updateStatusLabel("Creating MP4");
-                ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-pattern_type", "glob", "-i", "*.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
-                builder.directory(new File(Main.tempImageDirPath));
-                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-                Process createVideo = builder.start();
-                createVideo.waitFor();
-            } catch (Exception e) {
-                System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
-                e.printStackTrace();
-            }
-        }
-    }
-
+    /**
+     * Creates a Mandelbrot MP4 with threads
+     *
+     * @param numImages     The number of frames in the video
+     * @param width         The width in pixels of the video
+     * @param height        The height in pixels of the video
+     * @param iterations    The number of iterations used to determine a single pixel (higher iterations means better image)
+     * @param zoom          The starting zoom
+     * @param zoomFactor    The factor by which the zoom is increased every image in the video
+     * @param x             The x-coordinate of the center point
+     * @param y             The y-coordinate of the center point
+     * @param maxThreads    The maximum number of threads that can be active at once
+     * @param fps           The frames per second of the video
+     * @throws Exception
+     */
     public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
                                           double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
         long startTime = System.nanoTime();
@@ -198,7 +218,8 @@ public class GifController {
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
-        writeToMp4(fps, convertImageNames());
+        convertImageNames();
+        writeToMp4(fps);
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("MP4 Created!");
@@ -206,7 +227,7 @@ public class GifController {
     }
 
     /**
-     * Creates a Mandelbrot GIF using the given settings, but automatically sets iterations
+     * Creates a Mandelbrot GIF with threads, but automatically sets iterations
      *
      * @param numImages  The total number of images in the GIF
      * @param width      The width in pixels of the GIF
@@ -248,6 +269,19 @@ public class GifController {
         System.out.println((System.nanoTime() - startTime) / 1000000000);
     }
 
+    /**
+     * Creates a Mandelbrot GIF
+     *
+     * @param numImages     The total number of images in the GIF
+     * @param width         The width in pixels of the GIF
+     * @param height        The height in pixels of the GIF
+     * @param iterations    The number of iterations used to determine a single pixel (higher iterations means better image)
+     * @param initialZoom   The starting zoom for the GIF
+     * @param zoomFactor    The factor by which the zoom is increased every image in the GIF
+     * @param x             The x-coordinate to zoom into
+     * @param y             The y-coordinate to zoom into
+     * @throws Exception
+     */
     public static void makeGif(int numImages, int width, int height, int iterations, double initialZoom, double zoomFactor, double x, double y) throws Exception {
         long startTime = System.nanoTime();
         String fileName = "images/mandelbrot.gif";
