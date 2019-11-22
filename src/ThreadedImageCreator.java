@@ -15,14 +15,13 @@ public class ThreadedImageCreator implements Runnable {
     ThreadedImageCreator(String input) {
         this.inputStr = input;
         String[] inputs = input.split(",");
-        this.width = Integer.valueOf(inputs[0]);
-        this.height = Integer.valueOf(inputs[1]);
-        this.iterations = Integer.valueOf(inputs[2]);
-        this.zoom = Double.valueOf(inputs[3]);
-        this.x = Double.valueOf(inputs[4]);
-        this.y = Double.valueOf(inputs[5]);
-        this.outputFile = new File("tempImages/" + this.zoom + ".png");
-
+        this.width = Integer.parseInt(inputs[0]);
+        this.height = Integer.parseInt(inputs[1]);
+        this.iterations = Integer.parseInt(inputs[2]);
+        this.zoom = Double.parseDouble(inputs[3]);
+        this.x = Double.parseDouble(inputs[4]);
+        this.y = Double.parseDouble(inputs[5]);
+        this.outputFile = new File(Main.tempImageDirPath + this.zoom + ".png");
     }
 
     public void run() {

@@ -7,12 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.*;
 
-//Command to convert GIF to mp4 on Linux/Mac
-//ffmpeg -i mandelbrotThreaded.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" video.mp4
-
-//Command to convert JPegs to mp4 on Linux/Mac
-//ffmpeg -framerate 30 -pattern_type glob -i '*.png' -c:v libx264 -pix_fmt yuv420p out.mp4
-
 public class Main {
 
     private static JLabel statusLabel = new JLabel();
@@ -20,6 +14,8 @@ public class Main {
     private static boolean isPaused = true;
     public static ReentrantLock arrayPushLock = new ReentrantLock();
     public static ReentrantLock numThreadsLock = new ReentrantLock();
+    public static String tempImageDirPath = System.getProperty("user.dir") + "/tempImages/";
+    public static String finalOutputPath = System.getProperty("user.dir") + "/images/";
 
     //Good point: (-.74364386269, .13182590271)
     //Good point: (0.001643721971153, 0.822467633298876)
@@ -92,11 +88,15 @@ public class Main {
         HashMap<String, JComponent> elements = new HashMap<>();
 
         JButton gifButton = new JButton("Create GIF");
-        gifButton.setBounds(50, 400, 150, 50);
+        gifButton.setBounds(20, 400, 150, 50);
         elements.put("gifButton", gifButton);
 
+        JButton mp4Button = new JButton("Create MP4");
+        mp4Button.setBounds(170, 400, 150, 50);
+        elements.put("mp4Button", mp4Button);
+
         JButton imgButton = new JButton("Create PNG");
-        imgButton.setBounds(250, 400, 150, 50);
+        imgButton.setBounds(320, 400, 150, 50);
         elements.put("imgButton", imgButton);
 
         JLabel xLabel = new JLabel();
@@ -191,9 +191,8 @@ public class Main {
         ((JButton)elements.get("gifButton")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                System.out.println("Button Pressed");
                 try {
-                    File tempImagesDir = new File("tempImages");
+                    File tempImagesDir = new File(tempImageDirPath);
                     if(tempImagesDir.mkdir()){
                         System.out.println("Directory created successfully");
                     }else{
@@ -213,10 +212,33 @@ public class Main {
             }
         });
 
+        ((JButton)elements.get("mp4Button")).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    File tempImagesDir = new File(tempImageDirPath);
+                    if(tempImagesDir.mkdir()){
+                        System.out.println("Directory created successfully");
+                    }else{
+                        System.out.println("Sorry couldn’t create specified directory");
+                    }
+                    double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+                    double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+                    double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
+                    int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
+                    int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+                    double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                    int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
+                    GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, fps);
+                } catch (Exception e) {
+                    System.out.println("GIF Creation Failed!");
+                }
+            }
+        });
+
         ((JButton)elements.get("imgButton")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                System.out.println("Button Pressed");
                 try {
                     double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
                     double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());

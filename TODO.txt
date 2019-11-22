@@ -3,17 +3,18 @@ UI:
  - Be able to specify file output path
  - Be able to specify maximum thread count
  - Have checkbox for looping or not in GIF
+ - Have input validation
 
 GENERAL:
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
  - Be able to watch GIF or see image in window, not just save to file
- - Be able to save directly to mp4 (ffmpeg works great as a Linux/Mac command)
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter
  - Could try to memoize points maybe... (unlikely to work or be effective)
+ - Many optimizations here:  https://en.wikipedia.org/wiki/Mandelbrot_set
 
 BUGS:
  - createSmoothZoomedImage doesn't work

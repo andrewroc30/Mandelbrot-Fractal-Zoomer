@@ -87,7 +87,7 @@ public class GifController {
         //GET ALL IMAGE NAMES
         ArrayList<String> imgLst = new ArrayList<>();
         String fName;
-        File dir = new File("tempImages");
+        File dir = new File(Main.tempImageDirPath);
         for(File file: dir.listFiles()) {
             if (!file.isDirectory()) {
                 fName = file.getName();
@@ -104,8 +104,8 @@ public class GifController {
         ArrayList<File> newFiles = new ArrayList<>();
         int count = 1;
         for (double d : doubles) {
-            File oldFile = new File("tempImages/" + d + ".png");
-            File newFile = new File("tempImages/" + convertNumToStr(count) + ".png");
+            File oldFile = new File(Main.tempImageDirPath + d + ".png");
+            File newFile = new File(Main.tempImageDirPath + convertNumToStr(count) + ".png");
             try {
                 Files.move(oldFile.toPath(), newFile.toPath());
                 newFiles.add(newFile);
@@ -169,6 +169,39 @@ public class GifController {
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("GIF Created!");
+        System.out.println("Time elapsed: " + ((System.nanoTime() - startTime) / 1000000000) + " seconds");
+    }
+
+    public static void writeToMp4(int fps, ArrayList<File> files) {
+        if (OSValidator.isMac() || OSValidator.isUnix()) {
+            try {
+                Main.updateStatusLabel("Creating MP4");
+                ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-pattern_type", "glob", "-i", "*.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
+                builder.directory(new File(Main.tempImageDirPath));
+                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+                Process createVideo = builder.start();
+                createVideo.waitFor();
+            } catch (Exception e) {
+                System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
+                                          double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
+        long startTime = System.nanoTime();
+        numImagesToCreate = numImages;
+        // CLEANUP
+        cleanup();
+        // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
+        createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
+        // WRITE IMAGES TO GIF
+        writeToMp4(fps, convertImageNames());
+        // CLEANUP
+        cleanup();
+        Main.updateStatusLabel("MP4 Created!");
         System.out.println("Time elapsed: " + ((System.nanoTime() - startTime) / 1000000000) + " seconds");
     }
 
