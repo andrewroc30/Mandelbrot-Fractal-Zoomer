@@ -3,7 +3,6 @@ UI:
  - Be able to specify file output path
  - Be able to specify maximum thread count
  - Have checkbox for looping or not in GIF
- - Have input validation
 
 GENERAL:
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)

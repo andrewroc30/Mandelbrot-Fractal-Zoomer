@@ -100,7 +100,7 @@ public class Main {
         elements.put("imgButton", imgButton);
 
         JLabel xLabel = new JLabel();
-        xLabel.setText("Enter X-Coordinate (between -2 and 2)");
+        xLabel.setText("Enter X-Coordinate");
         xLabel.setBounds(50, 10, 500, 100);
         JTextField xText = new JTextField();
         xText.setBounds(300, 50, 130, 25);
@@ -109,7 +109,7 @@ public class Main {
         elements.put("xText", xText);
 
         JLabel yLabel = new JLabel();
-        yLabel.setText("Enter Y-Coordinate (between -2 and 2)");
+        yLabel.setText("Enter Y-Coordinate");
         yLabel.setBounds(50, -50, 500, 300);
         JTextField yText = new JTextField();
         yText.setBounds(300, 85, 130, 25);
@@ -191,23 +191,25 @@ public class Main {
         ((JButton)elements.get("gifButton")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                try {
-                    File tempImagesDir = new File(tempImageDirPath);
-                    if(tempImagesDir.mkdir()){
-                        System.out.println("Directory created successfully");
-                    }else{
-                        System.out.println("Sorry couldn’t create specified directory");
+                if (validateInput(elements)) {
+                    try {
+                        File tempImagesDir = new File(tempImageDirPath);
+                        if(tempImagesDir.mkdir()){
+                            System.out.println("Directory created successfully");
+                        }else{
+                            System.out.println("Sorry couldn’t create specified directory");
+                        }
+                        double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+                        double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+                        double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
+                        int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
+                        int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+                        double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                        int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
+                        GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, timeBetweenFramesMS);
+                    } catch (Exception e) {
+                        System.out.println("GIF Creation Failed!");
                     }
-                    double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
-                    double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
-                    double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
-                    int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
-                    int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
-                    double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
-                    int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
-                    GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, timeBetweenFramesMS);
-                } catch (Exception e) {
-                    System.out.println("GIF Creation Failed!");
                 }
             }
         });
@@ -215,23 +217,25 @@ public class Main {
         ((JButton)elements.get("mp4Button")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                try {
-                    File tempImagesDir = new File(tempImageDirPath);
-                    if(tempImagesDir.mkdir()){
-                        System.out.println("Directory created successfully");
-                    }else{
-                        System.out.println("Sorry couldn’t create specified directory");
+                if (validateInput(elements)) {
+                    try {
+                        File tempImagesDir = new File(tempImageDirPath);
+                        if(tempImagesDir.mkdir()){
+                            System.out.println("Directory created successfully");
+                        }else{
+                            System.out.println("Sorry couldn’t create specified directory");
+                        }
+                        double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+                        double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+                        double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
+                        int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
+                        int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+                        double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                        int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
+                        GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, fps);
+                    } catch (Exception e) {
+                        System.out.println("GIF Creation Failed!");
                     }
-                    double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
-                    double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
-                    double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
-                    int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
-                    int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
-                    double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
-                    int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
-                    GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, fps);
-                } catch (Exception e) {
-                    System.out.println("GIF Creation Failed!");
                 }
             }
         });
@@ -239,18 +243,97 @@ public class Main {
         ((JButton)elements.get("imgButton")).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                try {
-                    double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
-                    double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
-                    int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
-                    double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
-                    ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
-                            "png", new File("images/mandelbrot.png"));
-                    updateStatusLabel("Image created!");
-                } catch (Exception e) {
-                    System.out.println("Image Creation Failed!");
+                if (validateInput(elements)) {
+                    try {
+                        double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+                        double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+                        int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+                        double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                        ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
+                                "png", new File("images/mandelbrot.png"));
+                        updateStatusLabel("Image created!");
+                    } catch (Exception e) {
+                        System.out.println("Image Creation Failed!");
+                    }
                 }
             }
         });
+    }
+
+    /**
+     * Validates user input to prevent bad data, puts data on status label to inform user
+     *
+     * @return Whether or not all of the values in the input can be parsed properly
+     */
+    public static boolean validateInput(Map<String, JComponent> elements) {
+        //Validate x
+        try {
+            double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
+            if (x < -2 || x > 2) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("X must be a number between -2 and 2");
+            return false;
+        }
+        //Validate y
+        try {
+            double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
+            if (y < -2 || y > 2) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Y must be a number between -2 and 2");
+            return false;
+        }
+        //Validate zoomFactor
+        try {
+            Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Zoom Factor must be a number");
+            return false;
+        }
+        //Validate numImages
+        try {
+            int numImages = Integer.parseInt(((JTextField)elements.get("numImagesText")).getText());
+            if (numImages <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Number of Images must be a positive integer");
+            return false;
+        }
+        //Validate iterations
+        try {
+            int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
+            if (iterations <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Iterations must be a positive integer");
+            return false;
+        }
+        //Validate initialZoom
+        try {
+            double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+            if (initialZoom <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Initial Zoom must be a positive number");
+            return false;
+        }
+        //Validate fps
+        try {
+            int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
+            if (fps <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Frames per Second must be a positive integer");
+            return false;
+        }
+
+        return true;
     }
 }
