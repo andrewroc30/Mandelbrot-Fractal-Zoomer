@@ -6,7 +6,7 @@ This project creates a GIF or MP4 of zooming into a single point on the Mandelbr
 
 In order to use this project, must have Java SDK installed.
 
-For creating MP4, FFMPEG must be installed (OSX / Linux only)
+For creating MP4, FFMPEG must be installed
 
 ## Setup
 

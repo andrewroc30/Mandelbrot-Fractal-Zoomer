@@ -54,10 +54,15 @@ public class GifController {
         numActiveThreads = 0;
         numImagesCreated = 0;
 
-        File dir = new File("tempImages");
-        for(File file: dir.listFiles())
-            if (!file.isDirectory())
-                file.delete();
+        File dir = new File(Main.tempImageDirPath);
+        if (dir.listFiles() != null) {
+            for(File file: dir.listFiles()) {
+                if (!file.isDirectory()) {
+                    file.delete();
+                }
+            }
+        }
+        dir.delete();
     }
 
     /**
@@ -131,7 +136,7 @@ public class GifController {
             imgs.add(ImageIO.read(f));
         }
         //WRITE TO GIF
-        ImageOutputStream output = new FileImageOutputStream(new File("images/mandelbrotThreaded.gif"));
+        ImageOutputStream output = new FileImageOutputStream(new File(Main.finalOutputPath + "mandelbrotThreaded.gif"));
         GifSequenceWriter writer = new GifSequenceWriter(output, imgs.get(0).getType(), timeBetweenFramesMS, true);
         for (int i = 0; i < numImagesToCreate; i++) {
             writer.writeToSequence(imgs.get(i));
@@ -142,15 +147,30 @@ public class GifController {
     }
 
     /**
-     * Writes all of the created images to an MP4
+     * Writes all of the created images to an MP4 using ffmpeg
      *
      * @param fps The frames per second of the video
      */
-    public static void writeToMp4(int fps) {
+    public static void writeToMp4(int fps, int numImages) {
         if (OSValidator.isMac() || OSValidator.isUnix()) {
             try {
                 Main.updateStatusLabel("Creating MP4");
                 ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-pattern_type", "glob", "-i", "*.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
+                builder.directory(new File(Main.tempImageDirPath));
+                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+                Process createVideo = builder.start();
+                createVideo.waitFor();
+            } catch (Exception e) {
+                System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
+                e.printStackTrace();
+            }
+        } else if (OSValidator.isWindows()) {
+            try {
+                int numZeroes = String.valueOf(numImages).length();
+                Main.updateStatusLabel("Creating MP4");
+                ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-i", "%0" + numZeroes + "d.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
+                System.out.println(builder.command());
                 builder.directory(new File(Main.tempImageDirPath));
                 builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 builder.redirectError(ProcessBuilder.Redirect.INHERIT);
@@ -184,6 +204,8 @@ public class GifController {
         numImagesToCreate = numImages;
         // CLEANUP
         cleanup();
+        // CREATE TEMP IMAGES FOLDER
+        new File(Main.tempImageDirPath).mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
@@ -215,11 +237,13 @@ public class GifController {
         numImagesToCreate = numImages;
         // CLEANUP
         cleanup();
+        // CREATE TEMP IMAGES FOLDER
+        new File(Main.tempImageDirPath).mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
         convertImageNames();
-        writeToMp4(fps);
+        writeToMp4(fps, numImages);
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("MP4 Created!");
@@ -245,6 +269,9 @@ public class GifController {
         numImagesToCreate = numImages;
         // CLEANUP
         cleanup();
+        // CREATE TEMP IMAGES FOLDER
+        new File(Main.tempImageDirPath).mkdir();
+
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         int iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
         ThreadedImageCreator t;
@@ -267,43 +294,5 @@ public class GifController {
         cleanup();
         Main.updateStatusLabel("GIF Created!");
         System.out.println((System.nanoTime() - startTime) / 1000000000);
-    }
-
-    /**
-     * Creates a Mandelbrot GIF
-     *
-     * @param numImages     The total number of images in the GIF
-     * @param width         The width in pixels of the GIF
-     * @param height        The height in pixels of the GIF
-     * @param iterations    The number of iterations used to determine a single pixel (higher iterations means better image)
-     * @param initialZoom   The starting zoom for the GIF
-     * @param zoomFactor    The factor by which the zoom is increased every image in the GIF
-     * @param x             The x-coordinate to zoom into
-     * @param y             The y-coordinate to zoom into
-     * @throws Exception
-     */
-    public static void makeGif(int numImages, int width, int height, int iterations, double initialZoom, double zoomFactor, double x, double y) throws Exception {
-        long startTime = System.nanoTime();
-        String fileName = "images/mandelbrot.gif";
-        double zoom = initialZoom;
-        BufferedImage img1 = ImageController.createZoomedImage(width, height, iterations, zoom, x, y);
-
-        ImageOutputStream output = new FileImageOutputStream(new File(fileName));
-        GifSequenceWriter writer = new GifSequenceWriter(output, img1.getType(), 10, true);
-        writer.writeToSequence(img1);
-        System.out.println("Images processed: " + (1) + "/" + numImages);
-
-        for (int i = 1; i < numImages; i++) {
-            writer.writeToSequence(ImageController.createZoomedImage(width, height, iterations, zoom, x, y));
-            zoom = zoom * zoomFactor;
-            Main.getStatusLabel().setText("Images processed: " + (i + 1) + "/" + numImages);
-            Main.getFrame().update(Main.getFrame().getGraphics());
-            System.out.println("Images processed: " + (i + 1) + "/" + numImages);
-        }
-
-        writer.close();
-        output.close();
-
-        System.out.println("Sequential GIF creator: " + ((System.nanoTime() - startTime) / 1000000000));
     }
 }

@@ -14,8 +14,8 @@ public class Main {
     private static boolean isPaused = true;
     public static ReentrantLock arrayPushLock = new ReentrantLock();
     public static ReentrantLock numThreadsLock = new ReentrantLock();
-    public static String tempImageDirPath = System.getProperty("user.dir") + "/tempImages/";
-    public static String finalOutputPath = System.getProperty("user.dir") + "/images/";
+    public static String tempImageDirPath;
+    public static String finalOutputPath;
 
     //Good point: (-.74364386269, .13182590271)
     //Good point: (0.001643721971153, 0.822467633298876)
@@ -23,7 +23,7 @@ public class Main {
     //              0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995)
 
     public static void main(String[] args) {
-        statusLabel.setText("STATUS");
+        statusLabel.setText("");
         showStartUI();
     }
 
@@ -79,6 +79,24 @@ public class Main {
             return 10;
         }
         return 1000 / fps;
+    }
+
+    /**
+     * Sets the file paths for the temporary images and final output
+     *
+     * @param outputDirectory The user chosen output directory
+     */
+    private static void setPaths(String outputDirectory) {
+        if (OSValidator.isMac() || OSValidator.isUnix()) {
+            tempImageDirPath = outputDirectory + "/tempImages/";
+            finalOutputPath = outputDirectory + "/";
+        } else if  (OSValidator.isWindows()) {
+            tempImageDirPath = outputDirectory + "\\tempImages\\";
+            finalOutputPath = outputDirectory + "\\";
+        }
+        else {
+            System.out.println("OS not supported!  Only Linux, OSX, and Windows");
+        }
     }
 
     /**
@@ -162,6 +180,28 @@ public class Main {
         elements.put("timeBetweenFramesLabel", timeBetweenFramesLabel);
         elements.put("timeBetweenFramesText", timeBetweenFramesText);
 
+        JLabel filePickerLabel = new JLabel();
+        filePickerLabel.setText("Pick an output filepath");
+        filePickerLabel.setBounds(50, 170, 500, 300);
+        JTextField filePickerText = new JTextField();
+        filePickerText.setBounds(180, 305, 200, 25);
+        JButton filePickerButton = new JButton();
+        filePickerButton.setText("Browse");
+        filePickerButton.setBounds(380, 305, 80, 25);
+        JFileChooser filePickerChooser = new JFileChooser();
+        filePickerChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        filePickerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                if (filePickerChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    filePickerText.setText(filePickerChooser.getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+        elements.put("filePickerLabel", filePickerLabel);
+        elements.put("filePickerText", filePickerText);
+        elements.put("filePickerButton", filePickerButton);
+
         statusLabel.setBounds(160, 200, 500, 300);
         elements.put("statusLabel", statusLabel);
 
@@ -193,12 +233,7 @@ public class Main {
             public void actionPerformed(ActionEvent arg0) {
                 if (validateInput(elements)) {
                     try {
-                        File tempImagesDir = new File(tempImageDirPath);
-                        if(tempImagesDir.mkdir()){
-                            System.out.println("Directory created successfully");
-                        }else{
-                            System.out.println("Sorry couldn’t create specified directory");
-                        }
+                        setPaths(((JTextField)elements.get("filePickerText")).getText());
                         double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
                         double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
                         double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
@@ -219,12 +254,7 @@ public class Main {
             public void actionPerformed(ActionEvent arg0) {
                 if (validateInput(elements)) {
                     try {
-                        File tempImagesDir = new File(tempImageDirPath);
-                        if(tempImagesDir.mkdir()){
-                            System.out.println("Directory created successfully");
-                        }else{
-                            System.out.println("Sorry couldn’t create specified directory");
-                        }
+                        setPaths(((JTextField)elements.get("filePickerText")).getText());
                         double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
                         double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
                         double zoomFactor = Double.parseDouble(((JTextField)elements.get("zoomFactorText")).getText());
@@ -234,6 +264,10 @@ public class Main {
                         int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
                         GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, fps);
                     } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        for (StackTraceElement trace : e.getStackTrace()) {
+                            System.out.println(trace);
+                        }
                         System.out.println("GIF Creation Failed!");
                     }
                 }
@@ -250,7 +284,7 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
-                                "png", new File("images/mandelbrot.png"));
+                                "png", new File(finalOutputPath + "mandelbrot.png"));
                         updateStatusLabel("Image created!");
                     } catch (Exception e) {
                         System.out.println("Image Creation Failed!");
@@ -333,6 +367,7 @@ public class Main {
             updateStatusLabel("Frames per Second must be a positive integer");
             return false;
         }
+        //TODO: Validate path in filePickerText (needs to exist)
 
         return true;
     }

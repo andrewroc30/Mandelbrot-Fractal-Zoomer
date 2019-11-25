@@ -1,6 +1,5 @@
 UI:
  - Have checkbox for using auto iterations, which clears iterations field if checked
- - Be able to specify file output path
  - Be able to specify maximum thread count
  - Have checkbox for looping or not in GIF
 
