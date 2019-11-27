@@ -8,6 +8,7 @@ GENERAL:
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
  - Be able to watch GIF or see image in window, not just save to file
+ - Create interactive zoomer (e.g. click on a point to zoom into)
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter

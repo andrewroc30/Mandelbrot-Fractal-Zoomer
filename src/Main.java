@@ -14,8 +14,8 @@ public class Main {
     private static boolean isPaused = true;
     public static ReentrantLock arrayPushLock = new ReentrantLock();
     public static ReentrantLock numThreadsLock = new ReentrantLock();
-    public static String tempImageDirPath;
-    public static String finalOutputPath;
+    public static File tempImageDir;
+    public static File finalOutputDir;
 
     //Good point: (-.74364386269, .13182590271)
     //Good point: (0.001643721971153, 0.822467633298876)
@@ -87,16 +87,8 @@ public class Main {
      * @param outputDirectory The user chosen output directory
      */
     private static void setPaths(String outputDirectory) {
-        if (OSValidator.isMac() || OSValidator.isUnix()) {
-            tempImageDirPath = outputDirectory + "/tempImages/";
-            finalOutputPath = outputDirectory + "/";
-        } else if  (OSValidator.isWindows()) {
-            tempImageDirPath = outputDirectory + "\\tempImages\\";
-            finalOutputPath = outputDirectory + "\\";
-        }
-        else {
-            System.out.println("OS not supported!  Only Linux, OSX, and Windows");
-        }
+        tempImageDir = new File(outputDirectory, "tempImages");
+        finalOutputDir = new File(outputDirectory);
     }
 
     /**
@@ -284,7 +276,7 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
-                                "png", new File(finalOutputPath + "mandelbrot.png"));
+                                "png", new File(finalOutputDir, "mandelbrot.png"));
                         updateStatusLabel("Image created!");
                     } catch (Exception e) {
                         System.out.println("Image Creation Failed!");

@@ -54,9 +54,9 @@ public class GifController {
         numActiveThreads = 0;
         numImagesCreated = 0;
 
-        File dir = new File(Main.tempImageDirPath);
+        File dir = Main.tempImageDir;
         if (dir.listFiles() != null) {
-            for(File file: dir.listFiles()) {
+            for (File file : dir.listFiles()) {
                 if (!file.isDirectory()) {
                     file.delete();
                 }
@@ -92,11 +92,11 @@ public class GifController {
         //GET ALL IMAGE NAMES
         ArrayList<String> imgLst = new ArrayList<>();
         String fName;
-        File dir = new File(Main.tempImageDirPath);
-        for(File file: dir.listFiles()) {
+        File dir = Main.tempImageDir;
+        for (File file : dir.listFiles()) {
             if (!file.isDirectory()) {
                 fName = file.getName();
-                imgLst.add(fName.substring(0,fName.length() - 4));
+                imgLst.add(fName.substring(0, fName.length() - 4));
             }
         }
         //SORT THE IMAGE NAMES BY THEIR ZOOM
@@ -109,8 +109,8 @@ public class GifController {
         ArrayList<File> newFiles = new ArrayList<>();
         int count = 1;
         for (double d : doubles) {
-            File oldFile = new File(Main.tempImageDirPath + d + ".png");
-            File newFile = new File(Main.tempImageDirPath + convertNumToStr(count) + ".png");
+            File oldFile = new File(Main.tempImageDir, d + ".png");
+            File newFile = new File(Main.tempImageDir, convertNumToStr(count) + ".png");
             try {
                 Files.move(oldFile.toPath(), newFile.toPath());
                 newFiles.add(newFile);
@@ -126,7 +126,7 @@ public class GifController {
      * Writes the created images into a GIF
      *
      * @param timeBetweenFramesMS Time between frames in the GIF
-     * @param files ArrayList of Files to write to GIF
+     * @param files               ArrayList of Files to write to GIF
      * @throws Exception
      */
     public static void writeToGif(int timeBetweenFramesMS, ArrayList<File> files) throws Exception {
@@ -136,7 +136,7 @@ public class GifController {
             imgs.add(ImageIO.read(f));
         }
         //WRITE TO GIF
-        ImageOutputStream output = new FileImageOutputStream(new File(Main.finalOutputPath + "mandelbrotThreaded.gif"));
+        ImageOutputStream output = new FileImageOutputStream(new File(Main.finalOutputDir, "mandelbrotThreaded.gif"));
         GifSequenceWriter writer = new GifSequenceWriter(output, imgs.get(0).getType(), timeBetweenFramesMS, true);
         for (int i = 0; i < numImagesToCreate; i++) {
             writer.writeToSequence(imgs.get(i));
@@ -152,34 +152,19 @@ public class GifController {
      * @param fps The frames per second of the video
      */
     public static void writeToMp4(int fps, int numImages) {
-        if (OSValidator.isMac() || OSValidator.isUnix()) {
-            try {
-                Main.updateStatusLabel("Creating MP4");
-                ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-pattern_type", "glob", "-i", "*.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
-                builder.directory(new File(Main.tempImageDirPath));
-                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-                Process createVideo = builder.start();
-                createVideo.waitFor();
-            } catch (Exception e) {
-                System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
-                e.printStackTrace();
-            }
-        } else if (OSValidator.isWindows()) {
-            try {
-                int numZeroes = String.valueOf(numImages).length();
-                Main.updateStatusLabel("Creating MP4");
-                ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-i", "%0" + numZeroes + "d.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", Main.finalOutputPath + "out.mp4");
-                System.out.println(builder.command());
-                builder.directory(new File(Main.tempImageDirPath));
-                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-                Process createVideo = builder.start();
-                createVideo.waitFor();
-            } catch (Exception e) {
-                System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
-                e.printStackTrace();
-            }
+        try {
+            int numZeroes = String.valueOf(numImages).length();
+            Main.updateStatusLabel("Creating MP4");
+            ProcessBuilder builder = new ProcessBuilder("ffmpeg", "-y", "-framerate", String.valueOf(fps), "-i", "%0" + numZeroes + "d.png", "-c:v", "libx264", "-pix_fmt", "yuv420p", new File(Main.finalOutputDir, "out.mp4").getAbsolutePath());
+            System.out.println(builder.command());
+            builder.directory(Main.tempImageDir);
+            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+            Process createVideo = builder.start();
+            createVideo.waitFor();
+        } catch (Exception e) {
+            System.out.println("Shell script failed!  Make sure you have ffmpeg installed and usable on the command line!");
+            e.printStackTrace();
         }
     }
 
@@ -205,7 +190,7 @@ public class GifController {
         // CLEANUP
         cleanup();
         // CREATE TEMP IMAGES FOLDER
-        new File(Main.tempImageDirPath).mkdir();
+        Main.tempImageDir.mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
@@ -219,16 +204,16 @@ public class GifController {
     /**
      * Creates a Mandelbrot MP4 with threads
      *
-     * @param numImages     The number of frames in the video
-     * @param width         The width in pixels of the video
-     * @param height        The height in pixels of the video
-     * @param iterations    The number of iterations used to determine a single pixel (higher iterations means better image)
-     * @param zoom          The starting zoom
-     * @param zoomFactor    The factor by which the zoom is increased every image in the video
-     * @param x             The x-coordinate of the center point
-     * @param y             The y-coordinate of the center point
-     * @param maxThreads    The maximum number of threads that can be active at once
-     * @param fps           The frames per second of the video
+     * @param numImages  The number of frames in the video
+     * @param width      The width in pixels of the video
+     * @param height     The height in pixels of the video
+     * @param iterations The number of iterations used to determine a single pixel (higher iterations means better image)
+     * @param zoom       The starting zoom
+     * @param zoomFactor The factor by which the zoom is increased every image in the video
+     * @param x          The x-coordinate of the center point
+     * @param y          The y-coordinate of the center point
+     * @param maxThreads The maximum number of threads that can be active at once
+     * @param fps        The frames per second of the video
      * @throws Exception
      */
     public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
@@ -238,7 +223,7 @@ public class GifController {
         // CLEANUP
         cleanup();
         // CREATE TEMP IMAGES FOLDER
-        new File(Main.tempImageDirPath).mkdir();
+        Main.tempImageDir.mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
@@ -253,13 +238,13 @@ public class GifController {
     /**
      * Creates a Mandelbrot GIF with threads, but automatically sets iterations
      *
-     * @param numImages  The total number of images in the GIF
-     * @param width      The width in pixels of the GIF
-     * @param height     The height in pixels of the GIF
-     * @param zoom       The starting zoom for the GIF
-     * @param zoomFactor The factor by which the zoom is increased every image in the GIF
-     * @param x          The x-coordinate to zoom into
-     * @param y          The y-coordinate to zoom into
+     * @param numImages           The total number of images in the GIF
+     * @param width               The width in pixels of the GIF
+     * @param height              The height in pixels of the GIF
+     * @param zoom                The starting zoom for the GIF
+     * @param zoomFactor          The factor by which the zoom is increased every image in the GIF
+     * @param x                   The x-coordinate to zoom into
+     * @param y                   The y-coordinate to zoom into
      * @param timeBetweenFramesMS The number of milliseconds between frames
      * @throws Exception
      */
@@ -270,7 +255,7 @@ public class GifController {
         // CLEANUP
         cleanup();
         // CREATE TEMP IMAGES FOLDER
-        new File(Main.tempImageDirPath).mkdir();
+        Main.tempImageDir.mkdir();
 
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         int iterations = (int) Math.ceil(1000 * log(zoom)) + 100;
