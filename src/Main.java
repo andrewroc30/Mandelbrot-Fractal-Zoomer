@@ -173,7 +173,7 @@ public class Main {
         elements.put("timeBetweenFramesText", timeBetweenFramesText);
 
         JLabel filePickerLabel = new JLabel();
-        filePickerLabel.setText("Pick an output filepath");
+        filePickerLabel.setText("Pick output folder");
         filePickerLabel.setBounds(50, 170, 500, 300);
         JTextField filePickerText = new JTextField();
         filePickerText.setBounds(180, 305, 200, 25);
@@ -359,7 +359,12 @@ public class Main {
             updateStatusLabel("Frames per Second must be a positive integer");
             return false;
         }
-        //TODO: Validate path in filePickerText (needs to exist)
+        //Validate path in filePickerText
+        File f = new File(((JTextField)elements.get("filePickerText")).getText());
+        if (!(f.exists() && f.isDirectory())) {
+            updateStatusLabel("Not a valid output folder!");
+            return false;
+        }
 
         return true;
     }
