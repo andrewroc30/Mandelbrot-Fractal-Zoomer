@@ -271,6 +271,7 @@ public class Main {
             public void actionPerformed(ActionEvent arg0) {
                 if (validateInput(elements)) {
                     try {
+                        setPaths(((JTextField)elements.get("filePickerText")).getText());
                         double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
                         double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
