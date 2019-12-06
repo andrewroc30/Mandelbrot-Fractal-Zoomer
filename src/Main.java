@@ -17,30 +17,9 @@ public class Main {
     public static File tempImageDir;
     public static File finalOutputDir;
 
-    //Good point: (-.74364386269, .13182590271)
-    //Good point: (0.001643721971153, 0.822467633298876)
-    //Good Point: (-1.74995768370609350360221450607069970727110579726252077930242837820286008082972804887218672784431700831100544507655659531379747541999999995,
-    //              0.00000000000000000278793706563379402178294753790944364927085054500163081379043930650189386849765202169477470552201325772332454726999999995)
-
     public static void main(String[] args) {
         statusLabel.setText("");
         showStartUI();
-    }
-
-    /**
-     * Gets the status label of the UI
-     * @return JLabel of status
-     */
-    public static JLabel getStatusLabel() {
-        return statusLabel;
-    }
-
-    /**
-     * Gets the UI window
-     * @return JFrame of the UI
-     */
-    public static JFrame getFrame() {
-        return f;
     }
 
     /**
@@ -235,7 +214,9 @@ public class Main {
                         int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
                         int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
                         System.out.println("Using " + maxThreads + " threads");
+                        isPaused = false;
                         GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
+                        isPaused = true;
                     } catch (Exception e) {
                         System.out.println("GIF Creation Failed!");
                     }
@@ -258,7 +239,9 @@ public class Main {
                         int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
                         int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
                         System.out.println("Using " + maxThreads + " threads");
+                        isPaused = false;
                         GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
+                        isPaused = true;
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                         for (StackTraceElement trace : e.getStackTrace()) {
@@ -280,8 +263,10 @@ public class Main {
                         double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                        isPaused = false;
                         ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
                                 "png", new File(finalOutputDir, "mandelbrot.png"));
+                        isPaused = true;
                         updateStatusLabel("Image created!");
                     } catch (Exception e) {
                         System.out.println("Image Creation Failed!");
@@ -297,6 +282,11 @@ public class Main {
      * @return Whether or not all of the values in the input can be parsed properly
      */
     public static boolean validateInput(Map<String, JComponent> elements) {
+        //Check if we are already doing something
+        if (!isPaused) {
+            updateStatusLabel("Please wait for operation to finish");
+            return false;
+        }
         //Validate x
         try {
             double x = Double.parseDouble(((JTextField)elements.get("xText")).getText());
