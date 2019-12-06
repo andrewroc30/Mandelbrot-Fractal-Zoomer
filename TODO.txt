@@ -1,13 +1,12 @@
 UI:
  - Have checkbox for using auto iterations, which clears iterations field if checked
- - Be able to specify maximum thread count
  - Have checkbox for looping or not in GIF
 
 GENERAL:
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
+ - Maybe find some more points to zoom into (https://math.stackexchange.com/questions/2181175/value-to-use-as-center-of-mandelbrot-set-zoom)
  - Option to use higher d (multibrot sets with higher exponents)
- - Be able to watch GIF or see image in window, not just save to file
  - Create interactive zoomer (e.g. click on a point to zoom into)
 
 SPEEDUPS:

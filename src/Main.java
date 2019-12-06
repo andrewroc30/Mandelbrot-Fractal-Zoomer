@@ -233,7 +233,9 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
-                        GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, timeBetweenFramesMS);
+                        int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
+                        System.out.println("Using " + maxThreads + " threads");
+                        GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
                     } catch (Exception e) {
                         System.out.println("GIF Creation Failed!");
                     }
@@ -254,7 +256,9 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
-                        GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, 10, fps);
+                        int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
+                        System.out.println("Using " + maxThreads + " threads");
+                        GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                         for (StackTraceElement trace : e.getStackTrace()) {
