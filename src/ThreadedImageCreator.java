@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class ThreadedImageCreator implements Runnable {
@@ -27,10 +28,10 @@ public class ThreadedImageCreator implements Runnable {
     public void run() {
         try {
             changeNumThreads(true);
-            ImageWithZoom image = new ImageWithZoom(ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y), zoom);
+            BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
             try {
                 Main.arrayPushLock.lock();
-                ImageIO.write(image.getImage(), "png", outputFile);
+                ImageIO.write(image, "png", outputFile);
                 GifController.numImagesCreated++;
                 Main.updateStatusLabel("Images created: " + (GifController.numImagesCreated) + "/" + GifController.numImagesToCreate);
             } catch (Exception e) {
