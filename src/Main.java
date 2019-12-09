@@ -12,6 +12,7 @@ public class Main {
     private static JLabel statusLabel = new JLabel();
     private static JFrame f = new JFrame("Mandelbrot Image Zoomer");
     private static boolean isPaused = true;
+    private static boolean isCancelled = false;
     public static ReentrantLock arrayPushLock = new ReentrantLock();
     public static ReentrantLock numThreadsLock = new ReentrantLock();
     public static File tempImageDir;
@@ -23,7 +24,7 @@ public class Main {
     }
 
     /**
-     * Gets whether or not we are paused
+     * Gets whether or not the creation is paused
      * @return boolean of whether we are paused
      */
     public static boolean getIsPaused() {
@@ -31,11 +32,11 @@ public class Main {
     }
 
     /**
-     * Sets whether or not we are paused
-     * @param set Value to set whether we are paused to
+     * Gets whether or not the rest of the image creation has been cancelled
+     * @return boolean of whether the rest of the images have been cancelled
      */
-    public static void setIsPaused(boolean set) {
-        isPaused = set;
+    public static boolean getIsCancelled() {
+        return isCancelled;
     }
 
     /**
@@ -44,8 +45,13 @@ public class Main {
      */
     public static void updateStatusLabel(String status) {
         System.out.println(status);
-        statusLabel.setText(status);
-        f.update(f.getGraphics());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                statusLabel.setText(status);
+                f.update(f.getGraphics());
+            }
+        });
     }
 
     /**
@@ -93,7 +99,7 @@ public class Main {
         xLabel.setBounds(50, 10, 500, 100);
         JTextField xText = new JTextField();
         xText.setBounds(300, 50, 130, 25);
-        xText.setText("-.74364386269");
+        xText.setText("0.250004192545193613127858564129342013402481966322603088153880158130118342411377044460335903569109029974830577473040521791862202620804388057367031844851715");
         elements.put("xLabel", xLabel);
         elements.put("xText", xText);
 
@@ -102,7 +108,7 @@ public class Main {
         yLabel.setBounds(50, -50, 500, 300);
         JTextField yText = new JTextField();
         yText.setBounds(300, 85, 130, 25);
-        yText.setText(".13182590271");
+        yText.setText("0.0000000136723440278498956363855799786211940098275946182822890638711641266657225239686535941616043103142296320806428032888628485431058181507295587901452113878999");
         elements.put("yLabel", yLabel);
         elements.put("yText", yText);
 
@@ -111,7 +117,7 @@ public class Main {
         zoomFactorLabel.setBounds(50, -10, 500, 300);
         JTextField zoomFactorText = new JTextField();
         zoomFactorText.setBounds(300, 125, 130, 25);
-        zoomFactorText.setText("1.5");
+        zoomFactorText.setText("1.1");
         elements.put("zoomFactorLabel", zoomFactorLabel);
         elements.put("zoomFactorText", zoomFactorText);
 
@@ -120,7 +126,7 @@ public class Main {
         numImagesLabel.setBounds(50, 25, 500, 300);
         JTextField numImagesText = new JTextField();
         numImagesText.setBounds(300, 160, 130, 25);
-        numImagesText.setText("5");
+        numImagesText.setText("200");
         elements.put("numImagesLabel", numImagesLabel);
         elements.put("numImagesText", numImagesText);
 
@@ -129,7 +135,7 @@ public class Main {
         iterationsLabel.setBounds(50, 65, 500, 300);
         JTextField iterationsText = new JTextField();
         iterationsText.setBounds(300, 200, 130, 25);
-        iterationsText.setText("1000");
+        iterationsText.setText("10000");
         elements.put("iterationsLabel", iterationsLabel);
         elements.put("iterationsText", iterationsText);
 
@@ -173,7 +179,37 @@ public class Main {
         elements.put("filePickerText", filePickerText);
         elements.put("filePickerButton", filePickerButton);
 
-        statusLabel.setBounds(160, 200, 500, 300);
+        JButton playPauseButton = new JButton();
+        playPauseButton.setText("Pause");
+        playPauseButton.setBounds(100, 340, 100, 25);
+        playPauseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    playPauseButton.setText("Resume");
+                }
+                else {
+                    playPauseButton.setText("Pause");
+                }
+                System.out.println("isPaused: " + isPaused);
+            }
+        });
+        elements.put("playPauseButton", playPauseButton);
+
+        JButton cancelButton = new JButton();
+        cancelButton.setText("Cancel");
+        cancelButton.setBounds(300, 340, 100, 25);
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                isCancelled = !isCancelled;
+                System.out.println("isCancelled: " + isCancelled);
+            }
+        });
+        elements.put("cancelButton", cancelButton);
+
+        statusLabel.setBounds(160, 210, 500, 300);
         elements.put("statusLabel", statusLabel);
 
         return elements;
@@ -214,9 +250,19 @@ public class Main {
                         int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
                         int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
                         System.out.println("Using " + maxThreads + " threads");
-                        isPaused = false;
-                        GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
-                        isPaused = true;
+                        SwingWorker worker = new SwingWorker() {
+                            @Override
+                            protected Boolean doInBackground() throws Exception {
+                                isPaused = false;
+                                ((JButton)elements.get("playPauseButton")).setText("Pause");
+                                GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
+                                isPaused = true;
+                                isCancelled = false;
+                                ((JButton)elements.get("playPauseButton")).setText("Pause");
+                                return true;
+                            }
+                        };
+                        worker.execute();
                     } catch (Exception e) {
                         System.out.println("GIF Creation Failed!");
                     }
@@ -237,11 +283,21 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
-                        int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
+                        int maxThreads = Runtime.getRuntime().availableProcessors() - 2;
                         System.out.println("Using " + maxThreads + " threads");
-                        isPaused = false;
-                        GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
-                        isPaused = true;
+                        SwingWorker worker = new SwingWorker() {
+                            @Override
+                            protected Boolean doInBackground() throws Exception {
+                                isPaused = false;
+                                ((JButton)elements.get("playPauseButton")).setText("Pause");
+                                GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
+                                isPaused = true;
+                                isCancelled = false;
+                                ((JButton)elements.get("playPauseButton")).setText("Pause");
+                                return true;
+                            }
+                        };
+                        worker.execute();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                         for (StackTraceElement trace : e.getStackTrace()) {

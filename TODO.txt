@@ -3,6 +3,7 @@ UI:
  - Have checkbox for looping or not in GIF
 
 GENERAL:
+ - Be able to start creation from another folder of images that was partially created
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Maybe find some more points to zoom into (https://math.stackexchange.com/questions/2181175/value-to-use-as-center-of-mandelbrot-set-zoom)
@@ -11,9 +12,10 @@ GENERAL:
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter
-   - Possibly try to see if percentage of points that are black is higher than the last image?  Pretty crude though...
+   - Possibly try to see if percentage of points that are in same iteration is higher than the last image?  Pretty crude though...
  - Could try to memoize points maybe... (unlikely to work or be effective)
  - Many optimizations here:  https://en.wikipedia.org/wiki/Mandelbrot_set
+ - Utilize GPU
 
 BUGS:
  - createSmoothZoomedImage doesn't work

@@ -32,17 +32,27 @@ public class GifController {
      */
     public static void createImagesThreaded(int width, int height, int iterations, double zoom,
                                             double zoomFactor, double x, double y, int maxThreads) throws Exception {
+        int lastImageIndex = 0;
         ThreadedImageCreator t;
         for (int i = 0; i < numImagesToCreate; i++) {
             //Wait until there is another space for the thread to be made
-            while (numActiveThreads >= maxThreads) {
+            while (numActiveThreads >= maxThreads || Main.getIsPaused() && !Main.getIsCancelled()) {
                 Thread.sleep(10);
             }
+            // Stop creating images if cancelled
+            if (Main.getIsCancelled()) {
+                lastImageIndex = i;
+                break;
+            }
+            // Kick off a thread to create the zoomed image
             t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
             t.start();
             zoom = zoom * zoomFactor;
         }
         while (numImagesCreated < numImagesToCreate) {
+            if (Main.getIsCancelled() && numImagesCreated == lastImageIndex) {
+                break;
+            }
             TimeUnit.MILLISECONDS.sleep(10);
         }
     }
@@ -138,9 +148,9 @@ public class GifController {
         //WRITE TO GIF
         ImageOutputStream output = new FileImageOutputStream(new File(Main.finalOutputDir, "mandelbrotThreaded.gif"));
         GifSequenceWriter writer = new GifSequenceWriter(output, imgs.get(0).getType(), timeBetweenFramesMS, true);
-        for (int i = 0; i < numImagesToCreate; i++) {
+        for (int i = 0; i < files.size(); i++) {
             writer.writeToSequence(imgs.get(i));
-            Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + numImagesToCreate);
+            Main.updateStatusLabel("Images processed: " + (i + 1) + "/" + files.size());
         }
         writer.close();
         output.close();
