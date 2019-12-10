@@ -1,13 +1,17 @@
 UI:
  - Have checkbox for using auto iterations, which clears iterations field if checked
  - Have checkbox for looping or not in GIF
+ - Make status label always be centered
+ - Show progress of running threads in window (percent of pixels calculated)
+ - Make sure that we aren't creating images unnecessarily
+   - Show last created image while creating images
+   - Possibly show last image first to see if end goal is good
 
 GENERAL:
  - Be able to start creation from another folder of images that was partially created
- - Show last created image while creating images to see if we are creating them unnecessarily
+ - Instead of creating files, then renaming, just originally name them properly
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
- - Maybe find some more points to zoom into (https://math.stackexchange.com/questions/2181175/value-to-use-as-center-of-mandelbrot-set-zoom)
  - Option to use higher d (multibrot sets with higher exponents)
  - Create interactive zoomer (e.g. click on a point to zoom into)
 

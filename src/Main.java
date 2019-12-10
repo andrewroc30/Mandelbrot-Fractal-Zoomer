@@ -1,5 +1,6 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,7 +10,7 @@ import java.util.concurrent.locks.*;
 
 public class Main {
 
-    private static volatile JLabel statusLabel = new JLabel();
+    private static volatile JLabel statusLabel;
     private static JFrame f = new JFrame("Mandelbrot Image Zoomer");
     private static boolean isPaused = true;
     private static boolean isCancelled = false;
@@ -20,7 +21,6 @@ public class Main {
     public static File finalOutputDir;
 
     public static void main(String[] args) {
-        statusLabel.setText("");
         showStartUI();
     }
 
@@ -91,18 +91,22 @@ public class Main {
     public static Map<String, JComponent> getElements() {
         HashMap<String, JComponent> elements = new HashMap<>();
 
+        // Create GIF Button
         JButton gifButton = new JButton("Create GIF");
-        gifButton.setBounds(20, 400, 150, 50);
+        gifButton.setBounds(20, 600, 150, 50);
         elements.put("gifButton", gifButton);
 
+        // Create MP4 Button
         JButton mp4Button = new JButton("Create MP4");
-        mp4Button.setBounds(170, 400, 150, 50);
+        mp4Button.setBounds(170, 600, 150, 50);
         elements.put("mp4Button", mp4Button);
 
+        // Create PNG Button
         JButton imgButton = new JButton("Create PNG");
-        imgButton.setBounds(320, 400, 150, 50);
+        imgButton.setBounds(320, 600, 150, 50);
         elements.put("imgButton", imgButton);
 
+        // X-Coordinate Field
         JLabel xLabel = new JLabel();
         xLabel.setText("Enter X-Coordinate");
         xLabel.setBounds(50, 10, 500, 100);
@@ -112,6 +116,7 @@ public class Main {
         elements.put("xLabel", xLabel);
         elements.put("xText", xText);
 
+        // Y-Coordinate Field
         JLabel yLabel = new JLabel();
         yLabel.setText("Enter Y-Coordinate");
         yLabel.setBounds(50, -50, 500, 300);
@@ -121,6 +126,7 @@ public class Main {
         elements.put("yLabel", yLabel);
         elements.put("yText", yText);
 
+        // Zoom Factor Field
         JLabel zoomFactorLabel = new JLabel();
         zoomFactorLabel.setText("Enter Zoom Factor");
         zoomFactorLabel.setBounds(50, -10, 500, 300);
@@ -130,6 +136,7 @@ public class Main {
         elements.put("zoomFactorLabel", zoomFactorLabel);
         elements.put("zoomFactorText", zoomFactorText);
 
+        // Number of Images Field
         JLabel numImagesLabel = new JLabel();
         numImagesLabel.setText("Enter Number of Images");
         numImagesLabel.setBounds(50, 25, 500, 300);
@@ -139,6 +146,7 @@ public class Main {
         elements.put("numImagesLabel", numImagesLabel);
         elements.put("numImagesText", numImagesText);
 
+        // Iterations Field
         JLabel iterationsLabel = new JLabel();
         iterationsLabel.setText("Enter Iterations");
         iterationsLabel.setBounds(50, 65, 500, 300);
@@ -148,6 +156,7 @@ public class Main {
         elements.put("iterationsLabel", iterationsLabel);
         elements.put("iterationsText", iterationsText);
 
+        // Initial Zoom Field
         JLabel initialZoomLabel = new JLabel();
         initialZoomLabel.setText("Enter Initial Zoom");
         initialZoomLabel.setBounds(50, 100, 500, 300);
@@ -157,6 +166,7 @@ public class Main {
         elements.put("initialZoomLabel", initialZoomLabel);
         elements.put("initialZoomText", initialZoomText);
 
+        // Frames per Second Field
         JLabel timeBetweenFramesLabel = new JLabel();
         timeBetweenFramesLabel.setText("Enter Frames Per Second");
         timeBetweenFramesLabel.setBounds(50, 135, 500, 300);
@@ -166,14 +176,33 @@ public class Main {
         elements.put("timeBetweenFramesLabel", timeBetweenFramesLabel);
         elements.put("timeBetweenFramesText", timeBetweenFramesText);
 
+        // Dimensions Field
+        JLabel dimensionsLabel = new JLabel();
+        JLabel dimensionsSplitLabel = new JLabel();
+        dimensionsLabel.setText("Dimensions");
+        dimensionsSplitLabel.setText("x");
+        dimensionsLabel.setBounds(50, 170, 500, 300);
+        dimensionsSplitLabel.setBounds(330, 165, 500, 300);
+        JTextField dimensionsTextX = new JTextField();
+        JTextField dimensionsTextY = new JTextField();
+        dimensionsTextX.setBounds(240, 305, 75, 25);
+        dimensionsTextY.setBounds(355, 305, 75, 25);
+        dimensionsTextX.setText("1920");
+        dimensionsTextY.setText("1080");
+        elements.put("dimensionsLabel", dimensionsLabel);
+        elements.put("dimensionsSplitLabel", dimensionsSplitLabel);
+        elements.put("dimensionsTextX", dimensionsTextX);
+        elements.put("dimensionsTextY", dimensionsTextY);
+
+        // Output Folder Field
         JLabel filePickerLabel = new JLabel();
         filePickerLabel.setText("Pick output folder");
-        filePickerLabel.setBounds(50, 170, 500, 300);
+        filePickerLabel.setBounds(50, 205, 500, 300);
         JTextField filePickerText = new JTextField();
-        filePickerText.setBounds(180, 305, 200, 25);
+        filePickerText.setBounds(180, 340, 200, 25);
         JButton filePickerButton = new JButton();
         filePickerButton.setText("Browse");
-        filePickerButton.setBounds(380, 305, 80, 25);
+        filePickerButton.setBounds(380, 340, 80, 25);
         JFileChooser filePickerChooser = new JFileChooser();
         filePickerChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         filePickerButton.addActionListener(new ActionListener() {
@@ -188,9 +217,10 @@ public class Main {
         elements.put("filePickerText", filePickerText);
         elements.put("filePickerButton", filePickerButton);
 
+        // Pause/Resume Button
         JButton playPauseButton = new JButton();
         playPauseButton.setText("Pause");
-        playPauseButton.setBounds(50, 340, 100, 25);
+        playPauseButton.setBounds(50, 540, 100, 25);
         playPauseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -206,9 +236,10 @@ public class Main {
         });
         elements.put("playPauseButton", playPauseButton);
 
+        // Cancel Button
         JButton cancelButton = new JButton();
         cancelButton.setText("Cancel");
-        cancelButton.setBounds(200, 340, 100, 25);
+        cancelButton.setBounds(200, 540, 100, 25);
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -218,9 +249,10 @@ public class Main {
         });
         elements.put("cancelButton", cancelButton);
 
+        // Force Cancel Button
         JButton cancelButtonForce = new JButton();
         cancelButtonForce.setText("Force Cancel");
-        cancelButtonForce.setBounds(350, 340, 100, 25);
+        cancelButtonForce.setBounds(350, 540, 100, 25);
         cancelButtonForce.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -230,7 +262,9 @@ public class Main {
         });
         elements.put("cancelButtonForce", cancelButtonForce);
 
-        statusLabel.setBounds(160, 210, 500, 300);
+        // Status Label
+        statusLabel = new JLabel();
+        statusLabel.setBounds(160, 360, 500, 300);
         elements.put("statusLabel", statusLabel);
 
         return elements;
@@ -243,7 +277,7 @@ public class Main {
         for (Map.Entry j : elements.entrySet()) {
             f.add((JComponent)j.getValue());
         }
-        f.setSize(500, 500);
+        f.setSize(500, 700);
         f.setLayout(null);
         f.setVisible(true);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -269,7 +303,9 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         int timeBetweenFramesMS = fpsToMs(Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText()));
-                        int maxThreads = Runtime.getRuntime().availableProcessors() - 1;
+                        int dimX = Integer.parseInt(((JTextField)elements.get("dimensionsTextX")).getText());
+                        int dimY = Integer.parseInt(((JTextField)elements.get("dimensionsTextY")).getText());
+                        int maxThreads = Runtime.getRuntime().availableProcessors() - 2;
                         System.out.println("Using " + maxThreads + " threads");
                         SwingWorker worker = new SwingWorker() {
                             @Override
@@ -277,7 +313,7 @@ public class Main {
                                 isPaused = false;
                                 isCancelled = false;
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
-                                GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
+                                GifController.makeGifWithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
                                 isPaused = true;
                                 isCancelled = false;
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
@@ -305,6 +341,8 @@ public class Main {
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         int fps = Integer.parseInt(((JTextField)elements.get("timeBetweenFramesText")).getText());
+                        int dimX = Integer.parseInt(((JTextField)elements.get("dimensionsTextX")).getText());
+                        int dimY = Integer.parseInt(((JTextField)elements.get("dimensionsTextY")).getText());
                         int maxThreads = Runtime.getRuntime().availableProcessors() - 2;
                         System.out.println("Using " + maxThreads + " threads");
                         SwingWorker worker = new SwingWorker() {
@@ -314,7 +352,7 @@ public class Main {
                                 isCancelled = false;
                                 isCancelledForce = false;
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
-                                GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
+                                GifController.makeMp4WithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
                                 isPaused = true;
                                 isCancelled = false;
                                 isCancelledForce = false;
@@ -344,11 +382,17 @@ public class Main {
                         double y = Double.parseDouble(((JTextField)elements.get("yText")).getText());
                         int iterations = Integer.parseInt(((JTextField)elements.get("iterationsText")).getText());
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
+                        int dimX = Integer.parseInt(((JTextField)elements.get("dimensionsTextX")).getText());
+                        int dimY = Integer.parseInt(((JTextField)elements.get("dimensionsTextY")).getText());
                         isPaused = false;
-                        ImageIO.write(ImageController.createZoomedImage(1920, 1080, iterations, initialZoom, x, y),
-                                "png", new File(finalOutputDir, "mandelbrot.png"));
+                        BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, initialZoom, x, y);
+                        if (image != null) {
+                            ImageIO.write(image, "png", new File(finalOutputDir, "mandelbrot.png"));
+                            updateStatusLabel("Image created!");
+                        } else {
+                            updateStatusLabel("Image cancelled!");
+                        }
                         isPaused = true;
-                        updateStatusLabel("Image created!");
                     } catch (Exception e) {
                         System.out.println("Image Creation Failed!");
                     }
@@ -433,6 +477,17 @@ public class Main {
             }
         } catch (NumberFormatException e) {
             updateStatusLabel("Frames per Second must be a positive integer");
+            return false;
+        }
+        //Validate dimensions
+        try {
+            int dimX = Integer.parseInt(((JTextField)elements.get("dimensionsTextX")).getText());
+            int dimY = Integer.parseInt(((JTextField)elements.get("dimensionsTextY")).getText());
+            if (dimX <= 0 || dimY <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Dimensions must be positive integers");
             return false;
         }
         //Validate path in filePickerText
