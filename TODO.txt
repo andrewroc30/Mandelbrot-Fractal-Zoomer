@@ -19,7 +19,6 @@ GENERAL:
    - Here, we should hold onto the values of each iteration (memoize)
    - Keep calculating iterations as much as possible, so that we can instantly slide
    - Update slider so that maximum is always the latest iteration calculation
- - When cancelling image creation when watching, save image at current state
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter
@@ -27,9 +26,6 @@ SPEEDUPS:
  - Could try to memoize points maybe... (unlikely to work or be effective)
  - Many optimizations here:  https://en.wikipedia.org/wiki/Mandelbrot_set
  - Utilize GPU
- - In watching image creation
-   - Utilize cardioid checking
-   - Don't recalculate x0 and y0 for every iteration, will never change
 
 BUGS:
  - createSmoothZoomedImage doesn't work

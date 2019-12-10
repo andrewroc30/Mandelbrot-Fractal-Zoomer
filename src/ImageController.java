@@ -157,9 +157,11 @@ public class ImageController {
             colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
         }
 
-        double x0, y0, x, y;
+        double x, y;
         double[][] memoX = new double[height][width];
         double[][] memoY = new double[height][width];
+        double[][] memoX0 = new double[height][width];
+        double[][] memoY0 = new double[height][width];
         boolean[][] isDone = new boolean[height][width];
         for (int r = 0; r < isDone.length; r++) {
             for (int c = 0; c < isDone[r].length; c++) {
@@ -171,24 +173,32 @@ public class ImageController {
         for (int iteration = 0; iteration < max; iteration++) {
             for (int row = 0; row < height; row++) {
                 for (int col = 0; col < width; col++) {
-                    // If we cancel, stop creating the image
-                    if (Main.getIsCancelledForce()) {
-                        return null;
-                    }
                     // Do the actual algorithm...
-                    x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
-                    y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
-                    x = memoX[row][col];
-                    y = memoY[row][col];
                     if (isDone[row][col]) {
                         continue;
-                    } else if (x * x + y * y >= 4) {
+                    } else if (iteration == 0) {
+                        memoX0[row][col] = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
+                        memoY0[row][col] = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
+                    }
+
+                    //Cardioid checking
+                    double lessX = (memoX0[row][col] - 0.25);
+                    double ySquare = memoY0[row][col] * memoY0[row][col];
+                    double q = (lessX * lessX) + ySquare;
+                    if (q * (q + lessX) <= 0.25 * ySquare) {
+                        continue;
+                    }
+
+                    x = memoX[row][col];
+                    y = memoY[row][col];
+                    if (x * x + y * y >= 4) {
                         isDone[row][col] = true;
                         finishedIteration[row][col] = iteration;
                     } else {
-                        memoX[row][col] = x * x - y * y + x0;
-                        memoY[row][col] = 2 * x * y + y0;
+                        memoX[row][col] = x * x - y * y + memoX0[row][col];
+                        memoY[row][col] = 2 * x * y + memoY0[row][col];
                     }
+
                     // Set the color
                     if (isDone[row][col]) {
                         image.setRGB(col, row, colors[finishedIteration[row][col]]);
@@ -197,8 +207,11 @@ public class ImageController {
                     }
                 }
             }
-
-            System.out.println("Displaying image with iteration " + iteration);
+            // If we cancel, stop iterating
+            if (Main.getIsCancelledForce()) {
+                return image;
+            }
+            //System.out.println("Displaying image with iteration " + iteration);
             w.setImageLabel(image);
         }
 
