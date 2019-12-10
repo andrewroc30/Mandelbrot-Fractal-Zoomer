@@ -22,7 +22,7 @@ public class ThreadedImageCreator implements Runnable {
         this.zoom = Double.parseDouble(inputs[3]);
         this.x = Double.parseDouble(inputs[4]);
         this.y = Double.parseDouble(inputs[5]);
-        this.outputFile = new File(Main.tempImageDir, this.zoom + ".png");
+        this.outputFile = new File(Main.tempImageDir, inputs[6]);
     }
 
     public void run() {

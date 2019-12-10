@@ -9,7 +9,6 @@ UI:
 
 GENERAL:
  - Be able to start creation from another folder of images that was partially created
- - Instead of creating files, then renaming, just originally name them properly
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)

@@ -17,6 +17,11 @@ public class GifController {
     public static volatile int numActiveThreads = 0;
     public static volatile int numImagesToCreate = 0;
 
+    public static String getOutputFilename(int imgNumber) {
+        String convertedNum = convertNumToStr(imgNumber);
+        return convertedNum + ".png";
+    }
+
     /**
      * Creates the images using threads
      *
@@ -48,7 +53,7 @@ public class GifController {
                 break;
             }
             // Kick off a thread to create the zoomed image
-            t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
+            t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y + "," + getOutputFilename(i));
             t.start();
             zoom = zoom * zoomFactor;
             ThreadedImageCreator.changeNumThreads(true);
@@ -101,12 +106,12 @@ public class GifController {
     }
 
     /**
-     * Converts all of the filenames of the images
+     * Gets all of the images as Files
      *
-     * @return ArrayList containing all of the Files
+     * @return ArrayList containing all of the created images
      */
-    public static ArrayList<File> convertImageNames() {
-        //GET ALL IMAGE NAMES
+    public static ArrayList<File> getImageNames() {
+        // GET ALL IMAGE NAMES
         ArrayList<String> imgLst = new ArrayList<>();
         String fName;
         File dir = Main.tempImageDir;
@@ -116,27 +121,18 @@ public class GifController {
                 imgLst.add(fName.substring(0, fName.length() - 4));
             }
         }
-        //SORT THE IMAGE NAMES BY THEIR ZOOM
-        ArrayList<Double> doubles = new ArrayList<>();
+        // SORT THE IMAGE NAMES BY THEIR ID
+        ArrayList<Integer> integers = new ArrayList<>();
         for (String s : imgLst) {
-            doubles.add(Double.valueOf(s));
+            integers.add(Integer.valueOf(s));
         }
-        Collections.sort(doubles);
-        //RENAME THE IMAGES BY THEIR SORTED VALUES
-        ArrayList<File> newFiles = new ArrayList<>();
-        int count = 1;
-        for (double d : doubles) {
-            File oldFile = new File(Main.tempImageDir, d + ".png");
-            File newFile = new File(Main.tempImageDir, convertNumToStr(count) + ".png");
-            try {
-                Files.move(oldFile.toPath(), newFile.toPath());
-                newFiles.add(newFile);
-            } catch (IOException e) {
-                System.out.println("RENAME FAILED");
-            }
-            count++;
+        Collections.sort(integers);
+        // RETURN SORTED LIST OF IMAGES
+        ArrayList<File> files = new ArrayList<>();
+        for (int i : integers) {
+            files.add(new File(Main.tempImageDir, convertNumToStr(i) + ".png"));
         }
-        return newFiles;
+        return files;
     }
 
     /**
@@ -211,7 +207,7 @@ public class GifController {
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
-        writeToGif(timeBetweenFramesMS, convertImageNames());
+        writeToGif(timeBetweenFramesMS, getImageNames());
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("GIF Created!");
@@ -244,7 +240,7 @@ public class GifController {
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
-        convertImageNames();
+        //convertImageNames();
         writeToMp4(fps, numImages);
         // CLEANUP
         cleanup();
@@ -291,7 +287,7 @@ public class GifController {
         }
 
         // WRITE IMAGES TO VIDEO
-        writeToGif(timeBetweenFramesMS, convertImageNames());
+        writeToGif(timeBetweenFramesMS, getImageNames());
         // CLEANUP
         cleanup();
         Main.updateStatusLabel("GIF Created!");
