@@ -8,11 +8,20 @@ UI:
    - Possibly show last image first to see if end goal is good
 
 GENERAL:
+ - Be increase precision of calculations to better than double
  - Be able to start creation from another folder of images that was partially created
+ - Clean up code so that UI window isn't all in Main
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
  - Create interactive zoomer (e.g. click on a point to zoom into)
+ - Create window with slider that adjusts iterations on an image
+   - Here, we should hold onto the values of each iteration (memoize)
+   - Keep calculating iterations as much as possible, so that we can instantly slide
+   - Update slider so that maximum is always the latest iteration calculation
+ - When creating image in window
+   - Display image immediately
+   - Every iteration, repaint image (requires new image creation method)
 
 SPEEDUPS:
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter

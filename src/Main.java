@@ -384,15 +384,29 @@ public class Main {
                         double initialZoom = Double.parseDouble(((JTextField)elements.get("initialZoomText")).getText());
                         int dimX = Integer.parseInt(((JTextField)elements.get("dimensionsTextX")).getText());
                         int dimY = Integer.parseInt(((JTextField)elements.get("dimensionsTextY")).getText());
-                        isPaused = false;
-                        BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, initialZoom, x, y);
-                        if (image != null) {
-                            ImageIO.write(image, "png", new File(finalOutputDir, "mandelbrot.png"));
-                            updateStatusLabel("Image created!");
-                        } else {
-                            updateStatusLabel("Image cancelled!");
-                        }
-                        isPaused = true;
+                        SwingWorker worker = new SwingWorker() {
+                            @Override
+                            protected Boolean doInBackground() throws Exception {
+                                isPaused = false;
+                                isCancelled = false;
+                                isCancelledForce = false;
+                                ((JButton)elements.get("playPauseButton")).setText("Pause");
+                                BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, initialZoom, x, y);
+                                isPaused = true;
+                                isCancelled = false;
+                                isCancelledForce = false;
+                                ((JButton)elements.get("playPauseButton")).setText("Pause");
+                                if (image != null) {
+                                    ImageIO.write(image, "png", new File(finalOutputDir, "mandelbrot.png"));
+                                    updateStatusLabel("Image created!");
+                                    ImageWindow displayImage = new ImageWindow(dimX, dimY, image);
+                                } else {
+                                    updateStatusLabel("Image cancelled!");
+                                }
+                                return true;
+                            }
+                        };
+                        worker.execute();
                     } catch (Exception e) {
                         System.out.println("Image Creation Failed!");
                     }
