@@ -13,9 +13,9 @@ import static java.lang.Math.log;
 
 public class GifController {
 
-    public static int numImagesCreated = 0;
-    public static int numActiveThreads = 0;
-    public static int numImagesToCreate = 0;
+    public static volatile int numImagesCreated = 0;
+    public static volatile int numActiveThreads = 0;
+    public static volatile int numImagesToCreate = 0;
 
     /**
      * Creates the images using threads
@@ -36,7 +36,7 @@ public class GifController {
         ThreadedImageCreator t;
         for (int i = 0; i < numImagesToCreate; i++) {
             //Wait until there is another space for the thread to be made
-            while (numActiveThreads >= maxThreads || Main.getIsPaused() && !Main.getIsCancelled()) {
+            while (numActiveThreads >= maxThreads || Main.getIsPaused() && !Main.getIsCancelled() && !Main.getIsCancelledForce()) {
                 Thread.sleep(10);
             }
             // Stop creating images if cancelled
@@ -44,13 +44,20 @@ public class GifController {
                 lastImageIndex = i;
                 break;
             }
+            if (Main.getIsCancelledForce()) {
+                break;
+            }
             // Kick off a thread to create the zoomed image
             t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
             t.start();
             zoom = zoom * zoomFactor;
+            ThreadedImageCreator.changeNumThreads(true);
         }
         while (numImagesCreated < numImagesToCreate) {
             if (Main.getIsCancelled() && numImagesCreated == lastImageIndex) {
+                break;
+            }
+            if (Main.getIsCancelledForce()) {
                 break;
             }
             TimeUnit.MILLISECONDS.sleep(10);

@@ -27,8 +27,11 @@ public class ThreadedImageCreator implements Runnable {
 
     public void run() {
         try {
-            changeNumThreads(true);
             BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
+            if (image == null) {
+                System.out.print("Cancelling thread with zoom " + this.zoom);
+                return;
+            }
             try {
                 Main.arrayPushLock.lock();
                 ImageIO.write(image, "png", outputFile);
@@ -41,11 +44,11 @@ public class ThreadedImageCreator implements Runnable {
                 changeNumThreads(false);
             }
         } catch (Error e) {
-            System.out.println("Ran out of space!  Files of this size not yet supported");
+            System.out.println("Couldn't create image!");
         }
     }
 
-    public void changeNumThreads(boolean increment) {
+    public static void changeNumThreads(boolean increment) {
         Main.numThreadsLock.lock();
         try {
             if(increment) {

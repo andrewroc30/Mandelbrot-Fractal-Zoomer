@@ -9,10 +9,11 @@ import java.util.concurrent.locks.*;
 
 public class Main {
 
-    private static JLabel statusLabel = new JLabel();
+    private static volatile JLabel statusLabel = new JLabel();
     private static JFrame f = new JFrame("Mandelbrot Image Zoomer");
     private static boolean isPaused = true;
     private static boolean isCancelled = false;
+    private static boolean isCancelledForce = false;
     public static ReentrantLock arrayPushLock = new ReentrantLock();
     public static ReentrantLock numThreadsLock = new ReentrantLock();
     public static File tempImageDir;
@@ -32,11 +33,19 @@ public class Main {
     }
 
     /**
-     * Gets whether or not the rest of the image creation has been cancelled
+     * Gets whether or not the rest of the image creation has been cancelled (after finishing current images)
      * @return boolean of whether the rest of the images have been cancelled
      */
     public static boolean getIsCancelled() {
         return isCancelled;
+    }
+
+    /**
+     * Gets whether or not the rest of the image creation has been force cancelled (images in creation lost)
+     * @return boolean of whether the rest of the images have been force cancelled
+     */
+    public static boolean getIsCancelledForce() {
+        return isCancelledForce;
     }
 
     /**
@@ -181,7 +190,7 @@ public class Main {
 
         JButton playPauseButton = new JButton();
         playPauseButton.setText("Pause");
-        playPauseButton.setBounds(100, 340, 100, 25);
+        playPauseButton.setBounds(50, 340, 100, 25);
         playPauseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -199,7 +208,7 @@ public class Main {
 
         JButton cancelButton = new JButton();
         cancelButton.setText("Cancel");
-        cancelButton.setBounds(300, 340, 100, 25);
+        cancelButton.setBounds(200, 340, 100, 25);
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -208,6 +217,18 @@ public class Main {
             }
         });
         elements.put("cancelButton", cancelButton);
+
+        JButton cancelButtonForce = new JButton();
+        cancelButtonForce.setText("Force Cancel");
+        cancelButtonForce.setBounds(350, 340, 100, 25);
+        cancelButtonForce.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                isCancelledForce = !isCancelledForce;
+                System.out.println("isCancelledForce: " + isCancelledForce);
+            }
+        });
+        elements.put("cancelButtonForce", cancelButtonForce);
 
         statusLabel.setBounds(160, 210, 500, 300);
         elements.put("statusLabel", statusLabel);
@@ -254,6 +275,7 @@ public class Main {
                             @Override
                             protected Boolean doInBackground() throws Exception {
                                 isPaused = false;
+                                isCancelled = false;
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
                                 GifController.makeGifWithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
                                 isPaused = true;
@@ -289,10 +311,13 @@ public class Main {
                             @Override
                             protected Boolean doInBackground() throws Exception {
                                 isPaused = false;
+                                isCancelled = false;
+                                isCancelledForce = false;
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
                                 GifController.makeMp4WithThreads(numImages, 1920, 1080, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
                                 isPaused = true;
                                 isCancelled = false;
+                                isCancelledForce = false;
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
                                 return true;
                             }

@@ -4,6 +4,7 @@ UI:
 
 GENERAL:
  - Be able to start creation from another folder of images that was partially created
+ - Show last created image while creating images to see if we are creating them unnecessarily
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Maybe find some more points to zoom into (https://math.stackexchange.com/questions/2181175/value-to-use-as-center-of-mandelbrot-set-zoom)

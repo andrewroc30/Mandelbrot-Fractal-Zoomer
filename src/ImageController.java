@@ -44,6 +44,11 @@ public class ImageController {
                 y = 0;
                 int iteration = 0;
                 while (x * x + y * y < 2 * 2 && iteration < max) {
+                    // If we cancel, stop creating the image
+                    if (Main.getIsCancelledForce()) {
+                        return null;
+                    }
+                    // Do the actual algorithm...
                     xTemp = x * x - y * y + x0;
                     y = 2 * x * y + y0;
                     x = xTemp;
