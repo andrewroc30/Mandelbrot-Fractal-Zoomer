@@ -136,4 +136,72 @@ public class ImageController {
     public static float linear_interpolate(int c1, int c2, float i) {
         return (1 - i) * c1 + i * c2;
     }
+
+
+    /**
+     * Returns an image of the Mandelbrot set with the given zoom, displaying image every iteration
+     * @param width The width in pixels of the image
+     * @param height The height in pixels of the image
+     * @param max The maximum number of iterations per pixel
+     * @param zoom The zoom of the image
+     * @param x_coord The x-coordinate of the center of the image
+     * @param y_coord The y-coordinate of the center of the image
+     * @return BufferedImage of the fully zoomed in image of the Mandelbrot set
+     */
+    public static BufferedImage createZoomedImageProgression(int width, int height, int max, double zoom, double x_coord, double y_coord, ImageWindow w) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        int black = 0;
+        int[] colors = new int[max];
+        for (int i = 0; i < max; i++) {
+            colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
+        }
+
+        double x0, y0, x, y;
+        double[][] memoX = new double[height][width];
+        double[][] memoY = new double[height][width];
+        boolean[][] isDone = new boolean[height][width];
+        for (int r = 0; r < isDone.length; r++) {
+            for (int c = 0; c < isDone[r].length; c++) {
+                isDone[r][c] = false;
+            }
+        }
+        int[][] finishedIteration = new int[height][width];
+
+        for (int iteration = 0; iteration < max; iteration++) {
+            for (int row = 0; row < height; row++) {
+                for (int col = 0; col < width; col++) {
+                    // If we cancel, stop creating the image
+                    if (Main.getIsCancelledForce()) {
+                        return null;
+                    }
+                    // Do the actual algorithm...
+                    x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
+                    y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
+                    x = memoX[row][col];
+                    y = memoY[row][col];
+                    if (isDone[row][col]) {
+                        continue;
+                    } else if (x * x + y * y >= 4) {
+                        isDone[row][col] = true;
+                        finishedIteration[row][col] = iteration;
+                    } else {
+                        memoX[row][col] = x * x - y * y + x0;
+                        memoY[row][col] = 2 * x * y + y0;
+                    }
+                    // Set the color
+                    if (isDone[row][col]) {
+                        image.setRGB(col, row, colors[finishedIteration[row][col]]);
+                    } else {
+                        image.setRGB(col, row, black);
+                    }
+                }
+            }
+
+            System.out.println("Displaying image with iteration " + iteration);
+            w.setImageLabel(image);
+        }
+
+        return image;
+    }
 }

@@ -49,6 +49,14 @@ public class Main {
     }
 
     /**
+     * Sets whether or not the rest of the image creation has been force cancelled (images in creation lost)
+     * @param set boolean of whether the rest of the images have been force cancelled
+     */
+    public static void setIsCancelledForce(boolean set) {
+        isCancelledForce = set;
+    }
+
+    /**
      * Updates the UI Status Label with the given String
      * @param status The new status to set the UI Status Label to
      */
@@ -58,7 +66,7 @@ public class Main {
             @Override
             public void run() {
                 statusLabel.setText(status);
-                f.update(f.getGraphics());
+                f.repaint();
             }
         });
     }
@@ -390,8 +398,11 @@ public class Main {
                                 isPaused = false;
                                 isCancelled = false;
                                 isCancelledForce = false;
+                                updateStatusLabel("Creating image...");
                                 ((JButton)elements.get("playPauseButton")).setText("Pause");
-                                BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, initialZoom, x, y);
+                                ImageWindow displayImage = new ImageWindow(dimX, dimY, new BufferedImage(dimX, dimY, BufferedImage.TYPE_INT_RGB));
+                                //BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, initialZoom, x, y);
+                                BufferedImage image = ImageController.createZoomedImageProgression(dimX, dimY, iterations, initialZoom, x, y, displayImage);
                                 isPaused = true;
                                 isCancelled = false;
                                 isCancelledForce = false;
@@ -399,7 +410,7 @@ public class Main {
                                 if (image != null) {
                                     ImageIO.write(image, "png", new File(finalOutputDir, "mandelbrot.png"));
                                     updateStatusLabel("Image created!");
-                                    ImageWindow displayImage = new ImageWindow(dimX, dimY, image);
+                                    //ImageWindow displayImage = new ImageWindow(dimX, dimY, image);
                                 } else {
                                     updateStatusLabel("Image cancelled!");
                                 }
