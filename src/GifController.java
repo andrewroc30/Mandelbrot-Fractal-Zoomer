@@ -3,8 +3,6 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -13,11 +11,17 @@ import static java.lang.Math.log;
 
 public class GifController {
 
-    public static volatile int numImagesCreated = 0;
-    public static volatile int numActiveThreads = 0;
-    public static volatile int numImagesToCreate = 0;
+    static volatile int numImagesCreated = 0;
+    static volatile int numActiveThreads = 0;
+    static volatile int numImagesToCreate = 0;
 
-    public static String getOutputFilename(int imgNumber) {
+    /**
+     * Converts number to filename
+     *
+     * @param imgNumber Number of image to convert
+     * @return The number converted to a properly formatted String
+     */
+    private static String getOutputFilename(int imgNumber) {
         String convertedNum = convertNumToStr(imgNumber);
         return convertedNum + ".png";
     }
@@ -33,10 +37,10 @@ public class GifController {
      * @param x          The x-coordinate to zoom into
      * @param y          The y-coordinate to zoom into
      * @param maxThreads The maximum number of threads that can be active at once
-     * @throws Exception
+     * @throws Exception For thread sleeping
      */
-    public static void createImagesThreaded(int width, int height, int iterations, double zoom,
-                                            double zoomFactor, double x, double y, int maxThreads) throws Exception {
+    private static void createImagesThreaded(int width, int height, int iterations, double zoom,
+                                             double zoomFactor, double x, double y, int maxThreads) throws Exception {
         int lastImageIndex = 0;
         ThreadedImageCreator t;
         for (int i = 0; i < numImagesToCreate; i++) {
@@ -72,7 +76,7 @@ public class GifController {
     /**
      * Cleans up loose ends so another GIF can be created
      */
-    public static void cleanup() {
+    private static void cleanup() {
         numActiveThreads = 0;
         numImagesCreated = 0;
 
@@ -91,9 +95,9 @@ public class GifController {
      * Converts the number to a proper format for file naming convention
      *
      * @param count The number which needs to be converted
-     * @return The converted number as a String wiht proper number of leading 0's
+     * @return The converted number as a String with proper number of leading 0's
      */
-    public static String convertNumToStr(int count) {
+    private static String convertNumToStr(int count) {
         int maxStrLen = String.valueOf(numImagesToCreate).length();
         int curStrLen = String.valueOf(count).length();
         int diff = maxStrLen - curStrLen;
@@ -110,7 +114,7 @@ public class GifController {
      *
      * @return ArrayList containing all of the created images
      */
-    public static ArrayList<File> getImageNames() {
+    private static ArrayList<File> getImageNames() {
         // GET ALL IMAGE NAMES
         ArrayList<String> imgLst = new ArrayList<>();
         String fName;
@@ -140,9 +144,9 @@ public class GifController {
      *
      * @param timeBetweenFramesMS Time between frames in the GIF
      * @param files               ArrayList of Files to write to GIF
-     * @throws Exception
+     * @throws Exception          For reading and writing
      */
-    public static void writeToGif(int timeBetweenFramesMS, ArrayList<File> files) throws Exception {
+    private static void writeToGif(int timeBetweenFramesMS, ArrayList<File> files) throws Exception {
         //CONVERT TO BUFFEREDIMAGES
         ArrayList<BufferedImage> imgs = new ArrayList<>();
         for (File f : files) {
@@ -164,7 +168,7 @@ public class GifController {
      *
      * @param fps The frames per second of the video
      */
-    public static void writeToMp4(int fps, int numImages) {
+    private static void writeToMp4(int fps, int numImages) {
         try {
             int numZeroes = String.valueOf(numImages).length();
             Main.updateStatusLabel("Creating MP4");
@@ -194,10 +198,10 @@ public class GifController {
      * @param y                   The y-coordinate to zoom into
      * @param maxThreads          The maximum number of threads that can be active at once
      * @param timeBetweenFramesMS The number of milliseconds between frames
-     * @throws Exception
+     * @throws Exception          createImagesThreaded and writeToGif throw exceptions
      */
-    public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                          double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
+    static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
+                                   double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
         // CLEANUP
@@ -227,10 +231,10 @@ public class GifController {
      * @param y          The y-coordinate of the center point
      * @param maxThreads The maximum number of threads that can be active at once
      * @param fps        The frames per second of the video
-     * @throws Exception
+     * @throws Exception createImagesThreaded and writeToMp4 throw exceptions
      */
-    public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                          double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
+    static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
+                                   double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
         // CLEANUP
@@ -240,7 +244,6 @@ public class GifController {
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
         createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
-        //convertImageNames();
         writeToMp4(fps, numImages);
         // CLEANUP
         cleanup();
@@ -259,7 +262,7 @@ public class GifController {
      * @param x                   The x-coordinate to zoom into
      * @param y                   The y-coordinate to zoom into
      * @param timeBetweenFramesMS The number of milliseconds between frames
-     * @throws Exception
+     * @throws Exception          Thread sleeping and writeToGif throw exceptions
      */
     public static void makeGifWithThreadsAutoIterations(int numImages, int width, int height, double zoom,
                                                         double zoomFactor, double x, double y, int timeBetweenFramesMS) throws Exception {
@@ -276,8 +279,7 @@ public class GifController {
         for (int i = 0; i < numImages; i++) {
             System.out.println(iterations);
             //System.out.println(zoom);
-            t = new ThreadedImageCreator(Integer.toString(width) + "," + Integer.toString(height) + "," +
-                    Integer.toString(iterations) + "," + Double.toString(zoom) + "," + Double.toString(x) + "," + Double.toString(y));
+            t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
             iterations = (int) Math.ceil(10000 * Math.pow(log(zoom), 1.1)) + 100;
             t.start();
             zoom = zoom * zoomFactor;

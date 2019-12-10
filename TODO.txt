@@ -10,7 +10,6 @@ UI:
 GENERAL:
  - Be increase precision of calculations to better than double
  - Be able to start creation from another folder of images that was partially created
- - Clean up code so that UI window isn't all in Main
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
