@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 import static java.lang.Math.floor;
 import static java.lang.Math.log;
@@ -16,7 +18,7 @@ public class ImageController {
      * @param y_coord The y-coordinate of the center of the image
      * @return BufferedImage of the zoomed in image of the Mandelbrot set
      */
-    public static BufferedImage createZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
+    public static BufferedImage createZoomedImage(int width, int height, int max, BigDecimal zoom, BigDecimal x_coord, BigDecimal y_coord) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         int black = 0;
@@ -25,32 +27,33 @@ public class ImageController {
             colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
         }
 
-        double x0, y0, x, y, xTemp;
+        BigDecimal x0, y0, x, y, xTemp;
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
-                y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
+                System.out.println("Zoom: " + zoom.toString() + ", (" + row + ", " + col + ")");
+                x0 = ((new BigDecimal(col).subtract(new BigDecimal(width).divide(new BigDecimal(2), MathContext.DECIMAL128))).multiply(new BigDecimal(4)).divide(new BigDecimal(width), MathContext.DECIMAL128)).divide(zoom, MathContext.DECIMAL128).add(x_coord);
+                y0 = ((new BigDecimal(row).subtract(new BigDecimal(height).divide(new BigDecimal(2), MathContext.DECIMAL128))).multiply(new BigDecimal(4)).divide(new BigDecimal(width), MathContext.DECIMAL128)).divide(zoom, MathContext.DECIMAL128).add(y_coord);
 
                 //Cardioid checking
-                double lessX = (x0 - 0.25);
-                double ySquare = y0 * y0;
-                double q = (lessX * lessX) + ySquare;
-                if (q * (q + lessX) <= 0.25 * ySquare) {
+                BigDecimal lessX = (x0.subtract(new BigDecimal(0.25)));
+                BigDecimal ySquare = y0.multiply(y0);
+                BigDecimal q = (lessX.multiply(lessX)).add(ySquare);
+                if (q.multiply(q.add(lessX)).compareTo(new BigDecimal(0.25).multiply(ySquare)) <= 0) {
                     continue;
                 }
 
-                x = 0;
-                y = 0;
+                x = new BigDecimal(0);
+                y = new BigDecimal(0);
                 int iteration = 0;
-                while (x * x + y * y < 2 * 2 && iteration < max) {
+                while (x.multiply(x).add(y.multiply(y)).compareTo(new BigDecimal(4)) == -1 && iteration < max) {
                     // If we cancel, stop creating the image
                     if (Main.getIsCancelledForce()) {
                         return null;
                     }
                     // Do the actual algorithm...
-                    xTemp = x * x - y * y + x0;
-                    y = 2 * x * y + y0;
+                    xTemp = x.multiply(x).subtract(y).multiply(y).add(x0);
+                    y = new BigDecimal(2).multiply(x).multiply(y).add(y0);
                     x = xTemp;
                     iteration++;
                 }

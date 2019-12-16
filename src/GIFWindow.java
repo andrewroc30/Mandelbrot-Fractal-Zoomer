@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 public class GIFWindow extends JFrame {
     private JLabel xLabel;
@@ -228,8 +230,8 @@ public class GIFWindow extends JFrame {
                 try {
                     Main.statusType = "gif";
                     Main.setPaths(this.filePickerText.getText());
-                    double x = Double.parseDouble(this.xText.getText());
-                    double y = Double.parseDouble(this.yText.getText());
+                    BigDecimal x = new BigDecimal(this.xText.getText());
+                    BigDecimal y = new BigDecimal(this.yText.getText());
                     double zoomFactor = Double.parseDouble(this.zoomFactorText.getText());
                     int numImages = Integer.parseInt(this.numImagesText.getText());
                     int iterations = Integer.parseInt(this.iterationsText.getText());

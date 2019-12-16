@@ -1,6 +1,8 @@
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 public class ThreadedImageCreator implements Runnable {
     private Thread t;
@@ -9,9 +11,9 @@ public class ThreadedImageCreator implements Runnable {
     private int width;
     private int height;
     private int iterations;
-    private double zoom;
-    private double x;
-    private double y;
+    private BigDecimal zoom;
+    private BigDecimal x;
+    private BigDecimal y;
 
     ThreadedImageCreator(String input) {
         this.inputStr = input;
@@ -19,9 +21,9 @@ public class ThreadedImageCreator implements Runnable {
         this.width = Integer.parseInt(inputs[0]);
         this.height = Integer.parseInt(inputs[1]);
         this.iterations = Integer.parseInt(inputs[2]);
-        this.zoom = Double.parseDouble(inputs[3]);
-        this.x = Double.parseDouble(inputs[4]);
-        this.y = Double.parseDouble(inputs[5]);
+        this.zoom = new BigDecimal(inputs[3]);
+        this.x = new BigDecimal(inputs[4]);
+        this.y = new BigDecimal(inputs[5]);
         this.outputFile = new File(Main.tempImageDir, inputs[6]);
     }
 

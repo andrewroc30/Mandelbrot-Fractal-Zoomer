@@ -2,7 +2,7 @@ UI:
  - PNG window
    - Have iterations show when resolving image
    - Have option to not show image resolving
-     - If not showing, only then should we need iterations
+     - If not showing, only then should we need iterations field
  - GIF window
    - Have checkbox for looping or not
  - GIF/MP4 window
