@@ -1,14 +1,24 @@
 UI:
- - Have checkbox for using auto iterations, which clears iterations field if checked
- - Have checkbox for looping or not in GIF
- - Make status label always be centered
- - Show progress of running threads in window (percent of pixels calculated)
- - Make sure that we aren't creating images unnecessarily
-   - Show last created image while creating images
-   - Possibly show last image first to see if end goal is good
+ - PNG window
+   - Have iterations show when resolving image
+   - Have option to not show image resolving
+     - If not showing, only then should we need iterations
+ - GIF window
+   - Have checkbox for looping or not
+ - GIF/MP4 window
+   - Show progress of running threads in window (percent of pixels calculated)
+   - Make sure that we aren't creating images unnecessarily
+      - Show last created image while creating images
+      - Possibly show last image first to see if end goal is good
+ - All windows
+   - Correct window sizes for UI
+   - Have a 'home' button that brings you back to the start window
+   - Make starting window disappear after choosing
+   - Make status label always be centered
 
 GENERAL:
- - Be increase precision of calculations to better than double
+ - Put classes into packages to clean code(Particularly all the Window classes)
+ - Increase precision of calculations to better than double
  - Be able to start creation from another folder of images that was partially created
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Change coloring to use histogram coloring?? (could have better color scheme as well)

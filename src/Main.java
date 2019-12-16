@@ -3,7 +3,11 @@ import java.util.concurrent.locks.*;
 
 public class Main {
 
-    private static UIWindow uiWindow = new UIWindow();
+    static StartWindow startWindow = new StartWindow();
+    static GIFWindow gifWindow = new GIFWindow();
+    static MP4Window mp4Window = new MP4Window();
+    static PNGWindow pngWindow = new PNGWindow();
+    //static ExploreWindow exploreWindow = new ExploreWindow();
     private static boolean isPaused = true;
     private static boolean isCancelled = false;
     private static boolean isCancelledForce = false;
@@ -11,9 +15,11 @@ public class Main {
     static ReentrantLock numThreadsLock = new ReentrantLock();
     static File tempImageDir;
     static File finalOutputDir;
+    static String statusType;
 
     public static void main(String[] args) {
-        uiWindow.showStartUI();
+        //uiWindow.showStartUI();
+        startWindow.showStartWindow();
     }
 
     /**
@@ -69,7 +75,15 @@ public class Main {
      * @param status The status to set the status label to
      */
     static void updateStatusLabel(String status) {
-        uiWindow.updateStatusLabel(status);
+        if (statusType.equals("gif")) {
+            gifWindow.updateStatusLabel(status);
+        } else if (statusType.equals("mp4")) {
+            mp4Window.updateStatusLabel(status);
+        } else if (statusType.equals("png")) {
+            pngWindow.updateStatusLabel(status);
+        } else if (statusType.equals("explore")) {
+            //exploreWindow.updateStatusLabel(status);
+        }
     }
 
     /**
