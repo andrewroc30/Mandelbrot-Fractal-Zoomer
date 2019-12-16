@@ -35,7 +35,7 @@ public class PNGWindow extends JFrame{
     private JButton pngButton;
 
     public PNGWindow() {
-        super("Create a GIF");
+        super("Create a PNG");
     }
 
     /**

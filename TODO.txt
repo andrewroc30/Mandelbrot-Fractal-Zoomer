@@ -1,6 +1,5 @@
 UI:
  - PNG window
-   - Have iterations show when resolving image
    - Have option to not show image resolving
      - If not showing, only then should we need iterations
  - GIF window

@@ -211,8 +211,8 @@ public class ImageController {
             if (Main.getIsCancelledForce()) {
                 return image;
             }
-            //System.out.println("Displaying image with iteration " + iteration);
-            w.setImageLabel(image);
+            w.setImageLabel(image, iteration);
+            Main.updateStatusLabel("Iterations: " + iteration);
         }
 
         return image;
