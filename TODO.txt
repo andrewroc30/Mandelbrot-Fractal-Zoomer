@@ -9,6 +9,12 @@ UI:
    - Make sure that we aren't creating images unnecessarily
       - Show last created image while creating images
       - Possibly show last image first to see if end goal is good
+ - Explore Window
+   - Update image when zooming
+   - Make dragged box have static dimensions (ratio)
+   - Make dragged box be more visible
+   - Make dragged box not be too small?
+   - Make center coordinate correct (x -> x0, y -> y0)
  - All windows
    - Correct window sizes for UI
    - Have a 'home' button that brings you back to the start window

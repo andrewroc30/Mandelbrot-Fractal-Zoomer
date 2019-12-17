@@ -52,7 +52,7 @@ public class StartWindow extends JFrame {
         this.exploreButton.setBounds(215, 205, 150, 150);
         this.exploreButton.addActionListener(arg0 -> {
             System.out.println("Explore!");
-            //Main.exploreWindow.initWindow();
+            Main.exploreWindow.initWindow();
         });
 
 
