@@ -16,8 +16,9 @@ public class ImageController {
      * @param y_coord The y-coordinate of the center of the image
      * @return BufferedImage of the zoomed in image of the Mandelbrot set
      */
-    public static BufferedImage createZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
+    public static ZoomedImage createZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Point.Double[][] points = new Point.Double[height][width];
 
         int black = 0;
         int[] colors = new int[max];
@@ -31,6 +32,7 @@ public class ImageController {
             for (int col = 0; col < width; col++) {
                 x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
                 y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
+                points[row][col] = new Point.Double(x0, y0);
 
                 //Cardioid checking
                 double lessX = (x0 - 0.25);
@@ -58,7 +60,7 @@ public class ImageController {
                 else image.setRGB(col, row, black);
             }
         }
-        return image;
+        return new ZoomedImage(image, points, zoom);
     }
 
     /**

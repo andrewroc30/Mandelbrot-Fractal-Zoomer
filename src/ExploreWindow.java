@@ -13,6 +13,7 @@ public class ExploreWindow extends JFrame {
     BufferedImage image;
     int dimX;
     int dimY;
+    Point.Double[][] points;
 
     public ExploreWindow() {
         super("Explore the Mandelbrot Fractal");
@@ -23,7 +24,9 @@ public class ExploreWindow extends JFrame {
         dimX = (int)screenSize.getWidth();
         dimY = (int)screenSize.getHeight();
         setSize(dimX, dimY);
-        image = ImageController.createZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
+        ZoomedImage zi = ImageController.createZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
+        image = zi.image;
+        points = zi.points;
         background = new JLabel();
         background.setIcon(new ImageIcon(image));
         background.setLayout(new BorderLayout());
@@ -76,21 +79,19 @@ class LayeredPane extends JLayeredPane {
                 dragging = false;
                 //TODO: make the new zoom actually important
                 double newZoom = 2;
-                //TODO: make the x and y not pixel based, since we should always be between -2 and 2 (x -> x0, y -> y0)
-                //TODO: To do this
-                double newX = (double)(onClickX + onReleaseX) / 2;
-                double newY = (double)(onClickY + onReleaseY) / 2;
-                BufferedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, newX, newY);
-                System.out.println("(" + newX + "," + newY + ")");
+                int xPixel = (onClickX + onReleaseX) / 2;
+                int yPixel = (onClickY + onReleaseY) / 2;
+                Point.Double midPoint = parentWindow.points[yPixel][xPixel];
+                ZoomedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
                 try {
-                    ImageIO.write(img, "png", new File( "./mandelbrot.png"));
+                    ImageIO.write(img.image, "png", new File( "./mandelbrot.png"));
                 } catch (Exception ex) {
 
                 }
                 System.out.println("New image made");
                 repaint();
                 //TODO: Image doesn't get updated
-                parentWindow.updateImage(img);
+                parentWindow.updateImage(img.image);
             }
         };
         addMouseListener(ma);

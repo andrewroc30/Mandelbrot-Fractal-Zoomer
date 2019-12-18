@@ -14,7 +14,6 @@ UI:
    - Make dragged box have static dimensions (ratio)
    - Make dragged box be more visible
    - Make dragged box not be too small?
-   - Make center coordinate correct (x -> x0, y -> y0)
  - All windows
    - Correct window sizes for UI
    - Have a 'home' button that brings you back to the start window
@@ -42,4 +41,5 @@ SPEEDUPS:
  - Utilize GPU
 
 BUGS:
+ - Can't create 2 mp4s in a row? (need to check gif and png as well)
  - createSmoothZoomedImage doesn't work

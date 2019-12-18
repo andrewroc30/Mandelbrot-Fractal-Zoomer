@@ -27,7 +27,7 @@ public class ThreadedImageCreator implements Runnable {
 
     public void run() {
         try {
-            BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
+            BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
             if (image == null) {
                 System.out.print("Cancelling thread with zoom " + this.zoom);
                 return;
