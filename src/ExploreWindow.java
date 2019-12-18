@@ -61,6 +61,8 @@ class LayeredPane extends JLayeredPane {
     int onDragY;
     int onReleaseX;
     int onReleaseY;
+    int highlightedX;
+    int highlightedY;
     boolean dragging;
     ExploreWindow parentWindow;
 
@@ -87,12 +89,12 @@ class LayeredPane extends JLayeredPane {
                 dragging = false;
 
                 // Get the new zoom
-                double xDist = Math.abs(onClickX - onReleaseX);
+                double xDist = Math.abs(onClickX - highlightedX);
                 double ratio = xDist / (double)parentWindow.dimX;
                 double newZoom = parentWindow.zoom * (1 / ratio);
                 // Get the new midpoint
-                int xPixel = (onClickX + onReleaseX) / 2;
-                int yPixel = (onClickY + onReleaseY) / 2;
+                int xPixel = (onClickX + highlightedX) / 2;
+                int yPixel = (onClickY + highlightedY) / 2;
                 Point.Double midPoint = parentWindow.points[yPixel][xPixel];
                 // Create the image
                 ZoomedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
@@ -109,31 +111,43 @@ class LayeredPane extends JLayeredPane {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g.create();
         if (dragging) {
-            //Draw dragged box TODO: Make it so that we preserve dimensions http://math.hws.edu/eck/js/mandelbrot/MB.html
-            int diffX = onClickX - onDragX;
-            int diffY = onClickY - onDragY;
+            // Get the points with the correct ratio
+            int diffX = Math.abs(onClickX - onDragX);
+            int diffY = Math.abs(onClickY - onDragY);
             int dimX = parentWindow.dimX;
             int dimY = parentWindow.dimY;
-            double ratio = (double)(dimX) / (double)(dimY);
-            if (diffX > diffY) {
-                //Top
-                g2d.draw(new Line2D.Double(onClickX, onClickY, onDragX, onClickY));
-                //Left
-                g2d.draw(new Line2D.Double(onClickX, onClickY, onClickX, onDragY));
-                //Right
-                g2d.draw(new Line2D.Double(onDragX, onClickY, onDragX, onDragY));
-                //Bottom
-                g2d.draw(new Line2D.Double(onClickX, onDragY, onDragX, onDragY));
-            } else if (diffX < diffY) {
-                //Top
-                g2d.draw(new Line2D.Double(onClickX, onClickY, onDragX, onClickY));
-                //Left
-                g2d.draw(new Line2D.Double(onClickX, onClickY, onClickX, onDragY));
-                //Right
-                g2d.draw(new Line2D.Double(onDragX, onClickY, onDragX, onDragY));
-                //Bottom
-                g2d.draw(new Line2D.Double(onClickX, onDragY, onDragX, onDragY));
+            float xRatio = (float)(diffX) / (float)(dimX);
+            float yRatio = (float)(diffY) / (float)(dimY);
+            if (xRatio > yRatio) {
+                highlightedX = onDragX;
+                int newDiffY = (int)(dimY * xRatio);
+                if (onDragY > onClickY) {
+                    highlightedY = onClickY + newDiffY;
+                } else {
+                    highlightedY = onClickY - newDiffY;
+                }
+            } else if (xRatio < yRatio) {
+                highlightedY = onDragY;
+                int newDiffX = (int)(dimX * yRatio);
+                if (onDragX > onClickX) {
+                    highlightedX = onClickX + newDiffX;
+                } else {
+                    highlightedX = onClickX - newDiffX;
+                }
+            } else {
+                highlightedX = onDragX;
+                highlightedY = onDragY;
             }
+
+            // Draw dragged box
+            //Top
+            g2d.draw(new Line2D.Double(onClickX, onClickY, highlightedX, onClickY));
+            //Left
+            g2d.draw(new Line2D.Double(onClickX, onClickY, onClickX, highlightedY));
+            //Right
+            g2d.draw(new Line2D.Double(highlightedX, onClickY, highlightedX, highlightedY));
+            //Bottom
+            g2d.draw(new Line2D.Double(onClickX, highlightedY, highlightedX, highlightedY));
         }
         g2d.dispose();
     }

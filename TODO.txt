@@ -9,8 +9,6 @@ UI:
       - Show last created image while creating images
       - Possibly show last image first to see if end goal is good
  - Explore Window
-   - Make dragged box have static dimensions (http://math.hws.edu/eck/js/mandelbrot/MB.html)
-     - Keep track of where the box is for calculating image, not exactly where mouse is released
    - Be able to save current image and output info (x, y, zoom, iterations, etc.)
    - Be able to go back to last image
  - All windows
