@@ -24,6 +24,7 @@ public class ExploreWindow extends JFrame {
         dimY = (int)screenSize.getHeight();
         setSize(dimX, dimY);
         ZoomedImage zi = ImageController.createZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
+        //ZoomedImage zi = ImageController.createSmoothZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
         image = zi.image;
         points = zi.points;
         zoom = zi.zoom;
@@ -95,6 +96,7 @@ class LayeredPane extends JLayeredPane {
                 Point.Double midPoint = parentWindow.points[yPixel][xPixel];
                 // Create the image
                 ZoomedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
+                //ZoomedImage img = ImageController.createSmoothZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
                 parentWindow.updateImage(img);
             }
         };

@@ -26,12 +26,12 @@ public class ImageController {
             colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
         }
 
-        double x0, y0, x, y, xTemp;
+        double x0, y0;
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
-                y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
+                x0 = (((col - width / 2.0) * 4.0 / width) / zoom) + x_coord;
+                y0 = (((row - height / 2.0) * 4.0 / width) / zoom) + y_coord;
                 points[row][col] = new Point.Double(x0, y0);
 
                 //Cardioid checking
@@ -42,21 +42,12 @@ public class ImageController {
                     continue;
                 }
 
-                x = 0;
-                y = 0;
-                int iteration = 0;
-                while (x * x + y * y < 2 * 2 && iteration < max) {
-                    // If we cancel, stop creating the image
-                    if (Main.getIsCancelledForce()) {
-                        return null;
-                    }
-                    // Do the actual algorithm...
-                    xTemp = x * x - y * y + x0;
-                    y = 2 * x * y + y0;
-                    x = xTemp;
-                    iteration++;
+                int escapeIteration = getIterations(x0, y0, max);
+                if (escapeIteration == -1) {
+                    return null;
                 }
-                if (iteration < max) image.setRGB(col, row, colors[iteration]);
+
+                if (escapeIteration < max) image.setRGB(col, row, colors[escapeIteration]);
                 else image.setRGB(col, row, black);
             }
         }
@@ -64,70 +55,95 @@ public class ImageController {
     }
 
     /**
+     * Returns the number of iterations it took for the given point to escape
+     * @param x0 x-coordinate of given point
+     * @param y0 y-coordinate of given point
+     * @param max maximum number of iterations
+     * @return The number of iterations it took to escape, or -1 if the image is cancelled
+     */
+    private static int getIterations(double x0, double y0, int max) {
+        double x = 0, y = 0, xSquare = 0, ySquare = 0, xTemp;
+        int iteration = 0;
+
+        while (xSquare + ySquare < 4 && iteration < max) {
+            // If we cancel, stop creating the image
+            if (Main.getIsCancelledForce()) {
+                return -1;
+            }
+            // Do the actual algorithm...
+            xSquare = x * x;
+            ySquare = y * y;
+            xTemp = xSquare - ySquare + x0;
+            y = 2 * x * y + y0;
+            x = xTemp;
+            iteration++;
+        }
+
+        return iteration;
+    }
+
+    /**
      * Returns an image of the Mandelbrot set with the given zoom, but without banding
-     * @param w The width in pixels of the image
-     * @param h The height in pixels of the image
-     * @param m The maximum number of iterations per pixel
+     * @param width The width in pixels of the image
+     * @param height The height in pixels of the image
+     * @param max The maximum number of iterations per pixel
      * @param zoom The zoom of the image
      * @param x_coord The x-coordinate of the center of the image
      * @param y_coord The y-coordinate of the center of the image
      * @return BufferedImage of the zoomed in image of the Mandelbrot set
      */
-    public static BufferedImage createSmoothZoomedImage(int w, int h, int m, double zoom, double x_coord, double y_coord) {
-        int width = w, height = h, max = m;
+    public static ZoomedImage createSmoothZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Point.Double[][] points = new Point.Double[height][width];
 
         int black = 0;
-        int[] colors = new int[max];
-        for (int i = 0; i < max; i++) {
+        int[] colors = new int[max + 1];
+        for (int i = 0; i <= max; i++) {
             colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
         }
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                double x0 = (((col - width / 2) * 4.0 / width) / zoom) + x_coord;
-                double y0 = (((row - height / 2) * 4.0 / width) / zoom) + y_coord;
-                double x = 0, y = 0;
-                double iteration = 0;
-                while (x * x + y * y <= (1 << 16) && iteration < max) {
-                    double xTemp = x * x - y * y + x0;
+                double x0 = (((col - width / 2.0) * 4.0 / width) / zoom) + x_coord;
+                double y0 = (((row - height / 2.0) * 4.0 / width) / zoom) + y_coord;
+                points[row][col] = new Point.Double(x0, y0);
+
+                // Get the iterations for this point
+                double x = 0, y = 0, xSquare = 0, ySquare = 0, iteration = 0, xTemp;
+                while (xSquare + ySquare < 4 && iteration < max) {
+                    // If we cancel, stop creating the image
+                    if (Main.getIsCancelledForce()) {
+                        return null;
+                    }
+                    // Do the actual algorithm...
+                    xSquare = x * x;
+                    ySquare = y * y;
+                    xTemp = xSquare - ySquare + x0;
                     y = 2 * x * y + y0;
                     x = xTemp;
                     iteration++;
                 }
 
+                // Smooth the point
                 if (iteration < max) {
-                    // sqrt of inner term removed using log simplification rules.
-                    double log_zn = log(x * x + y * y) / 2;
+                    double log_zn = log(xSquare + ySquare) / 2;
                     double nu = log(log_zn / log(2)) / log(2);
-                    // Rearranging the potential function.
-                    // Dividing log_zn by log(2) instead of log(N = 1<<8)
-                    // because we want the entire palette to range from the
-                    // center to radius 2, NOT our bailout radius.
                     iteration = iteration + 1 - nu;
-                }
-
-                 /*
-                 For the coloring we must have a cyclic scale of colors (constructed mathematically, for instance) and containing H colors numbered from 0 to H − 1 (H = 500, for instance).
-                 We multiply the real number v(z) by a fixed real number determining the density of the colors in the picture, take the integral part of
-                 this number modulo H, and use it to look up the corresponding color in the color table.
-                 */
-
-                if (iteration < max) {
-                    int color1 = colors[(int) floor(iteration)];
-                    int color2 = colors[(int) floor(iteration) + 1];
-                    // iteration % 1 = fractional part of iteration.
-                    int color = Color.HSBtoRGB(0.95f + 10 * linear_interpolate(color1, color2, (float) iteration % 1), 0.6f, 1.0f);
-                    image.setRGB(col, row, color);
+                    RGB color1 = intToRGB(colors[(int) floor(iteration)]);
+                    RGB color2 = intToRGB(colors[(int) floor(iteration) + 1]);
+                    RGB interpolation = new RGB(
+                            (int)linear_interpolate((float)color1.red, (float)color2.red, (float)(iteration % 1)),
+                            (int)linear_interpolate((float)color1.green, (float)color2.green, (float)(iteration % 1)),
+                            (int)linear_interpolate((float)color1.blue, (float)color2.blue, (float)(iteration % 1)));
+                    image.setRGB(col, row, RGBtoInt(interpolation.red, interpolation.green, interpolation.blue));
                 } else {
                     image.setRGB(col, row, black);
                 }
             }
         }
-        return image;
+        return new ZoomedImage(image, points, zoom);
     }
 
-    // TODO: should this return a double? Also stop casting to ints?
     /**
      * Performs linear interpolation on the given values to get a smooth coloring scheme
      * @param c1 Value representing the first color
@@ -135,8 +151,33 @@ public class ImageController {
      * @param i The current iteration
      * @return The linear interpolation of the 2 colors
      */
-    public static float linear_interpolate(int c1, int c2, float i) {
+    private static float linear_interpolate(float c1, float c2, float i) {
         return (1 - i) * c1 + i * c2;
+    }
+
+    /**
+     * Converts integer to an RGB object
+     * @param value The given integer rgb value
+     * @return An RGB object containing the rgb values as integers 0-255
+     */
+    public static RGB intToRGB(int value)
+    {
+        var red =   ( value >>  0 ) & 255;
+        var green = ( value >>  8 ) & 255;
+        var blue =  ( value >> 16 ) & 255;
+        return new RGB(red, green, blue);
+    }
+
+    /**
+     * Converts an rgb from separate integers 0-255 to an rgb in integer form
+     * @param r The red value
+     * @param g The green value
+     * @param b The blue value
+     * @return An integer representing the rgb value
+     */
+    public static int RGBtoInt(int r, int g, int b)
+    {
+        return ( r << 0 ) | ( g << 8 ) | ( b << 16 );
     }
 
 
@@ -218,5 +259,21 @@ public class ImageController {
         }
 
         return image;
+    }
+
+
+    /**
+     * A class for representing an rgb as 3 separate integers 0-255
+     */
+    private static class RGB {
+        int red;
+        int green;
+        int blue;
+
+        public RGB(int red, int green, int blue) {
+            this.red = red;
+            this.green = green;
+            this.blue = blue;
+        }
     }
 }

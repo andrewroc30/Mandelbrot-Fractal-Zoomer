@@ -204,9 +204,12 @@ public class PNGWindow extends JFrame{
                             Main.setIsCancelledForce(false);
                             updateStatusLabel("Creating image...");
                             playPauseButton.setText("Pause");
+
                             ImageWindow displayImage = new ImageWindow(dimX, dimY, new BufferedImage(dimX, dimY, BufferedImage.TYPE_INT_RGB));
-                            //BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, zoom, x, y);
                             BufferedImage image = ImageController.createZoomedImageProgression(dimX, dimY, iterations, zoom, x, y, displayImage);
+                            //BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, zoom, x, y).image;
+                            //BufferedImage image = ImageController.createSmoothZoomedImage(dimX, dimY, iterations, zoom, x, y).image;
+
                             Main.setIsPaused(true);
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
@@ -214,7 +217,6 @@ public class PNGWindow extends JFrame{
                             if (image != null) {
                                 ImageIO.write(image, "png", new File(Main.finalOutputDir, "mandelbrot.png"));
                                 updateStatusLabel("Image created!");
-                                //ImageWindow displayImage = new ImageWindow(dimX, dimY, image);
                             } else {
                                 updateStatusLabel("Image cancelled!");
                             }

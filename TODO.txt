@@ -18,12 +18,14 @@ UI:
    - Have a 'home' button that brings you back to the start window
    - Make starting window disappear after choosing
    - Make status label always be centered
+   - Have option to use smooth images or not
 
 GENERAL:
- - Put classes into packages to clean code(Particularly all the Window classes)
+ - Put classes into packages to clean code (particularly all the Window classes)
  - Increase precision of calculations to better than double
+   - Look at 'Perturbation Theory' in wiki
+   - Use Fractions with BigInteger (pretty slow I'd imagine...)
  - Be able to start creation from another folder of images that was partially created
- - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
  - Option to use higher d (multibrot sets with higher exponents)
  - Create window with slider that adjusts iterations on an image
    - Here, we should hold onto the values of each iteration (memoize)
@@ -32,12 +34,13 @@ GENERAL:
 
 SPEEDUPS:
  - Have key-frames (e.g. every zoom factor of 2), then fill in everything in between (don't have to calculate every image)
- - Keep track of how many iterations last point took, then start from there (need to be able to work up and/or down from there)
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter
    - Possibly try to see if percentage of points that are in same iteration is higher than the last image?  Pretty crude though...
- - Could try to memoize points maybe... (unlikely to work or be effective)
+ - Could try to memoize points maybe, could possibly be effective when using keyframes
+ - Set is symmetrical over the x-axis, could reflect (but doesn't speed up deeper points)
  - Utilize GPU (NOT EASY TO INTEGRATE)
 
 BUGS:
- - Can't create 2 mp4s in a row? (need to check gif and png as well)
- - createSmoothZoomedImage doesn't work
+ - Can't create 2 MP4s or PNGs in a row? (need to check gif as well)
+ - Dimensions of window != dimensions of screen, so point is slightly off depending on difference (Explore Window)
+ - Not enough precision at high zooms, need better than just doubles
