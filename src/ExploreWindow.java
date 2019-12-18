@@ -1,11 +1,9 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class ExploreWindow extends JFrame {
 
@@ -14,6 +12,7 @@ public class ExploreWindow extends JFrame {
     int dimX;
     int dimY;
     Point.Double[][] points;
+    double zoom;
 
     public ExploreWindow() {
         super("Explore the Mandelbrot Fractal");
@@ -27,6 +26,7 @@ public class ExploreWindow extends JFrame {
         ZoomedImage zi = ImageController.createZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
         image = zi.image;
         points = zi.points;
+        zoom = zi.zoom;
         background = new JLabel();
         background.setIcon(new ImageIcon(image));
         background.setLayout(new BorderLayout());
@@ -37,8 +37,15 @@ public class ExploreWindow extends JFrame {
         setVisible(true);
     }
 
-    public void updateImage(BufferedImage img) {
+    public void updateImage(ZoomedImage img) {
+        image = img.image;
+        points = img.points;
+        zoom = img.zoom;
+        background = new JLabel();
         background.setIcon(new ImageIcon(image));
+        background.setLayout(new BorderLayout());
+        this.setContentPane(background);
+        add(new LayeredPane(this));
         revalidate();
         repaint();
     }
@@ -77,21 +84,18 @@ class LayeredPane extends JLayeredPane {
                 onReleaseX = e.getX();
                 onReleaseY = e.getY();
                 dragging = false;
-                //TODO: make the new zoom actually important
-                double newZoom = 2;
+
+                // Get the new zoom
+                double xDist = Math.abs(onClickX - onReleaseX);
+                double ratio = xDist / (double)parentWindow.dimX;
+                double newZoom = parentWindow.zoom * (1 / ratio);
+                // Get the new midpoint
                 int xPixel = (onClickX + onReleaseX) / 2;
                 int yPixel = (onClickY + onReleaseY) / 2;
                 Point.Double midPoint = parentWindow.points[yPixel][xPixel];
+                // Create the image
                 ZoomedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
-                try {
-                    ImageIO.write(img.image, "png", new File( "./mandelbrot.png"));
-                } catch (Exception ex) {
-
-                }
-                System.out.println("New image made");
-                repaint();
-                //TODO: Image doesn't get updated
-                parentWindow.updateImage(img.image);
+                parentWindow.updateImage(img);
             }
         };
         addMouseListener(ma);

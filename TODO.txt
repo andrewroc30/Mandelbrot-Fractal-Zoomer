@@ -1,7 +1,6 @@
 UI:
  - PNG window
-   - Have option to not show image resolving
-     - If not showing, only then should we need iterations
+   - Have option to choose showing image resolving
  - GIF window
    - Have checkbox for looping or not
  - GIF/MP4 window
@@ -10,10 +9,10 @@ UI:
       - Show last created image while creating images
       - Possibly show last image first to see if end goal is good
  - Explore Window
-   - Update image when zooming
-   - Make dragged box have static dimensions (ratio)
-   - Make dragged box be more visible
-   - Make dragged box not be too small?
+   - Make dragged box have static dimensions (http://math.hws.edu/eck/js/mandelbrot/MB.html)
+     - Keep track of where the box is for calculating image, not exactly where mouse is released
+   - Be able to save current image and output info (x, y, zoom, iterations, etc.)
+   - Be able to go back to last image
  - All windows
    - Correct window sizes for UI
    - Have a 'home' button that brings you back to the start window
@@ -25,20 +24,19 @@ GENERAL:
  - Increase precision of calculations to better than double
  - Be able to start creation from another folder of images that was partially created
  - Change up the algorithm to be smooth instead of normal (check wiki for pseudo)
- - Change coloring to use histogram coloring?? (could have better color scheme as well)
  - Option to use higher d (multibrot sets with higher exponents)
- - Create interactive zoomer (e.g. click on a point to zoom into)
  - Create window with slider that adjusts iterations on an image
    - Here, we should hold onto the values of each iteration (memoize)
    - Keep calculating iterations as much as possible, so that we can instantly slide
    - Update slider so that maximum is always the latest iteration calculation
 
 SPEEDUPS:
+ - Have key-frames (e.g. every zoom factor of 2), then fill in everything in between (don't have to calculate every image)
+ - Keep track of how many iterations last point took, then start from there (need to be able to work up and/or down from there)
  - Possibly automatically increase iterations as we zoom in further, making initial images lighter
    - Possibly try to see if percentage of points that are in same iteration is higher than the last image?  Pretty crude though...
  - Could try to memoize points maybe... (unlikely to work or be effective)
- - Many optimizations here:  https://en.wikipedia.org/wiki/Mandelbrot_set
- - Utilize GPU
+ - Utilize GPU (NOT EASY TO INTEGRATE)
 
 BUGS:
  - Can't create 2 mp4s in a row? (need to check gif and png as well)
