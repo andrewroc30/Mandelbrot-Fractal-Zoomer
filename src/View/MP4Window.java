@@ -1,20 +1,32 @@
-import javax.imageio.ImageIO;
+package View;
+
+import Main.Main;
+import Controller.GifController;
+
 import javax.swing.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class PNGWindow extends JFrame{
+public class MP4Window extends JFrame {
     private JLabel xLabel;
     private JTextField xText;
 
     private JLabel yLabel;
     private JTextField yText;
 
+    private JLabel zoomFactorLabel;
+    private JTextField zoomFactorText;
+
+    private JLabel numImagesLabel;
+    private JTextField numImagesText;
+
     private JLabel iterationsLabel;
     private JTextField iterationsText;
 
-    private JLabel zoomLabel;
-    private JTextField zoomText;
+    private JLabel initialZoomLabel;
+    private JTextField initialZoomText;
+
+    private JLabel timeBetweenFramesLabel;
+    private JTextField timeBetweenFramesText;
 
     private JLabel dimensionsLabel;
     private JLabel dimensionsSplitLabel;
@@ -32,17 +44,17 @@ public class PNGWindow extends JFrame{
 
     private JLabel statusLabel;
 
-    private JButton pngButton;
+    private JButton mp4Button;
 
-    public PNGWindow() {
-        super("Create a PNG");
+    public MP4Window() {
+        super("Create an MP4");
     }
 
     /**
      * Updates the Status Label with the given String
      * @param status The new status to set the Status Label to
      */
-    void updateStatusLabel(String status) {
+    public void updateStatusLabel(String status) {
         System.out.println(status);
         SwingUtilities.invokeLater(() -> {
             this.statusLabel.setText(status);
@@ -64,7 +76,7 @@ public class PNGWindow extends JFrame{
         // X-Coordinate Field
         this.xLabel = new JLabel();
         this.xLabel.setText("Enter X-Coordinate");
-        this.xLabel.setBounds(50, -85, 500, 300);
+        this.xLabel.setBounds(50, 10, 500, 100);
         this.xText = new JTextField();
         this.xText.setBounds(300, 50, 130, 25);
         this.xText.setText("0.250004192545193613127858564129342013402481966322603088153880158130118342411377044460335903569109029974830577473040521791862202620804388057367031844851715");
@@ -81,37 +93,67 @@ public class PNGWindow extends JFrame{
         this.add(this.yLabel);
         this.add(this.yText);
 
+        // Zoom Factor Field
+        this.zoomFactorLabel = new JLabel();
+        this.zoomFactorLabel.setText("Enter Zoom Factor");
+        this.zoomFactorLabel.setBounds(50, -10, 500, 300);
+        this.zoomFactorText = new JTextField();
+        this.zoomFactorText.setBounds(300, 125, 130, 25);
+        this.zoomFactorText.setText("1.1");
+        this.add(this.zoomFactorLabel);
+        this.add(this.zoomFactorText);
+
+        // Number of Images Field
+        this.numImagesLabel = new JLabel();
+        this.numImagesLabel.setText("Enter Number of Images");
+        this.numImagesLabel.setBounds(50, 25, 500, 300);
+        this.numImagesText = new JTextField();
+        this.numImagesText.setBounds(300, 160, 130, 25);
+        this.numImagesText.setText("200");
+        this.add(this.numImagesLabel);
+        this.add(this.numImagesText);
+
         // Iterations Field
         this.iterationsLabel = new JLabel();
         this.iterationsLabel.setText("Enter Iterations");
-        this.iterationsLabel.setBounds(50, -15, 500, 300);
+        this.iterationsLabel.setBounds(50, 65, 500, 300);
         this.iterationsText = new JTextField();
-        this.iterationsText.setBounds(300, 120, 130, 25);
+        this.iterationsText.setBounds(300, 200, 130, 25);
         this.iterationsText.setText("10000");
         this.add(this.iterationsLabel);
         this.add(this.iterationsText);
 
-        // Zoom Field
-        this.zoomLabel = new JLabel();
-        this.zoomLabel.setText("Enter Zoom");
-        this.zoomLabel.setBounds(50, 20, 500, 300);
-        this.zoomText = new JTextField();
-        this.zoomText.setBounds(300, 155, 130, 25);
-        this.zoomText.setText("1");
-        this.add(this.zoomLabel);
-        this.add(this.zoomText);
+        // Initial Zoom Field
+        this.initialZoomLabel = new JLabel();
+        this.initialZoomLabel.setText("Enter Initial Zoom");
+        this.initialZoomLabel.setBounds(50, 100, 500, 300);
+        this.initialZoomText = new JTextField();
+        this.initialZoomText.setBounds(300, 235, 130, 25);
+        this.initialZoomText.setText("1");
+        this.add(this.initialZoomLabel);
+        this.add(this.initialZoomText);
+
+        // Frames per Second Field
+        this.timeBetweenFramesLabel = new JLabel();
+        this.timeBetweenFramesLabel.setText("Enter Frames Per Second");
+        this.timeBetweenFramesLabel.setBounds(50, 135, 500, 300);
+        this.timeBetweenFramesText = new JTextField();
+        this.timeBetweenFramesText.setBounds(300, 270, 130, 25);
+        this.timeBetweenFramesText.setText("30");
+        this.add(this.timeBetweenFramesLabel);
+        this.add(this.timeBetweenFramesText);
 
         // Dimensions Field
         this.dimensionsLabel = new JLabel();
         this.dimensionsSplitLabel = new JLabel();
         this.dimensionsLabel.setText("Dimensions");
         this.dimensionsSplitLabel.setText("x");
-        this.dimensionsLabel.setBounds(50, 55, 500, 300);
-        this.dimensionsSplitLabel.setBounds(330, 50, 500, 300);
+        this.dimensionsLabel.setBounds(50, 170, 500, 300);
+        this.dimensionsSplitLabel.setBounds(330, 165, 500, 300);
         this.dimensionsTextX = new JTextField();
         this.dimensionsTextY = new JTextField();
-        this.dimensionsTextX.setBounds(240, 190, 75, 25);
-        this.dimensionsTextY.setBounds(355, 190, 75, 25);
+        this.dimensionsTextX.setBounds(240, 305, 75, 25);
+        this.dimensionsTextY.setBounds(355, 305, 75, 25);
         this.dimensionsTextX.setText("1920");
         this.dimensionsTextY.setText("1080");
         this.add(this.dimensionsLabel);
@@ -122,12 +164,12 @@ public class PNGWindow extends JFrame{
         // Output Folder Field
         this.filePickerLabel = new JLabel();
         this.filePickerLabel.setText("Pick output folder");
-        this.filePickerLabel.setBounds(50, 90, 500, 300);
+        this.filePickerLabel.setBounds(50, 205, 500, 300);
         this.filePickerText = new JTextField();
-        this.filePickerText.setBounds(180, 225, 200, 25);
+        this.filePickerText.setBounds(180, 340, 200, 25);
         this.filePickerButton = new JButton();
         this.filePickerButton.setText("Browse");
-        this.filePickerButton.setBounds(380, 225, 80, 25);
+        this.filePickerButton.setBounds(380, 340, 80, 25);
         this.filePickerChooser = new JFileChooser();
         this.filePickerChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         this.filePickerButton.addActionListener(evt -> {
@@ -181,55 +223,53 @@ public class PNGWindow extends JFrame{
         this.statusLabel.setBounds(160, 360, 500, 300);
         this.add(this.statusLabel);
 
-        // PNG Button
-        this.pngButton = new JButton();
-        this.pngButton.setText("Create PNG");
-        this.pngButton.setBounds(170, 600, 150, 50);
-        this.pngButton.addActionListener(arg0 -> {
+        // MP4 Button
+        this.mp4Button = new JButton();
+        this.mp4Button.setText("Create MP4");
+        this.mp4Button.setBounds(170, 600, 150, 50);
+        this.mp4Button.addActionListener(e -> {
+            System.out.println("Create an MP4");
             if (validateInput()) {
                 try {
-                    Main.statusType = "png";
-                    Main.setPaths(filePickerText.getText());
-                    double x = Double.parseDouble(xText.getText());
-                    double y = Double.parseDouble(yText.getText());
-                    int iterations = Integer.parseInt(iterationsText.getText());
-                    double zoom = Double.parseDouble(zoomText.getText());
-                    int dimX = Integer.parseInt(dimensionsTextX.getText());
-                    int dimY = Integer.parseInt(dimensionsTextY.getText());
+                    Main.statusType = "mp4";
+                    Main.setPaths(this.filePickerText.getText());
+                    double x = Double.parseDouble(this.xText.getText());
+                    double y = Double.parseDouble(this.yText.getText());
+                    double zoomFactor = Double.parseDouble(this.zoomFactorText.getText());
+                    int numImages = Integer.parseInt(this.numImagesText.getText());
+                    int iterations = Integer.parseInt(this.iterationsText.getText());
+                    double initialZoom = Double.parseDouble(this.initialZoomText.getText());
+                    int fps = Integer.parseInt(this.timeBetweenFramesText.getText());
+                    int dimX = Integer.parseInt(this.dimensionsTextX.getText());
+                    int dimY = Integer.parseInt(this.dimensionsTextY.getText());
+                    int maxThreads = Runtime.getRuntime().availableProcessors() - 2;
+                    System.out.println("Using " + maxThreads + " threads");
                     SwingWorker worker = new SwingWorker() {
                         @Override
                         protected Boolean doInBackground() throws Exception {
                             Main.setIsPaused(false);
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
-                            updateStatusLabel("Creating image...");
                             playPauseButton.setText("Pause");
-
-                            ImageWindow displayImage = new ImageWindow(dimX, dimY, new BufferedImage(dimX, dimY, BufferedImage.TYPE_INT_RGB));
-                            BufferedImage image = ImageController.createZoomedImageProgression(dimX, dimY, iterations, zoom, x, y, displayImage);
-                            //BufferedImage image = ImageController.createZoomedImage(dimX, dimY, iterations, zoom, x, y).image;
-                            //BufferedImage image = ImageController.createSmoothZoomedImage(dimX, dimY, iterations, zoom, x, y).image;
-
+                            GifController.makeMp4WithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
                             Main.setIsPaused(true);
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
                             playPauseButton.setText("Pause");
-                            if (image != null) {
-                                ImageIO.write(image, "png", new File(Main.finalOutputDir, "mandelbrot.png"));
-                                updateStatusLabel("Image created!");
-                            } else {
-                                updateStatusLabel("Image cancelled!");
-                            }
                             return true;
                         }
                     };
                     worker.execute();
-                } catch (Exception e) {
-                    System.out.println("Image Creation Failed!");
+                } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                    for (StackTraceElement trace : ex.getStackTrace()) {
+                        System.out.println(trace);
+                    }
+                    System.out.println("GIF Creation Failed!");
                 }
             }
         });
-        this.add(this.pngButton);
+        this.add(this.mp4Button);
     }
 
     /**
@@ -263,6 +303,23 @@ public class PNGWindow extends JFrame{
             updateStatusLabel("Y must be a number between -2 and 2");
             return false;
         }
+        //Validate zoomFactor
+        try {
+            Double.parseDouble(zoomFactorText.getText());
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Zoom Factor must be a number");
+            return false;
+        }
+        //Validate numImages
+        try {
+            int numImages = Integer.parseInt(numImagesText.getText());
+            if (numImages <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Number of Images must be a positive integer");
+            return false;
+        }
         //Validate iterations
         try {
             int iterations = Integer.parseInt(iterationsText.getText());
@@ -273,14 +330,24 @@ public class PNGWindow extends JFrame{
             updateStatusLabel("Iterations must be a positive integer");
             return false;
         }
-        //Validate zoom
+        //Validate initialZoom
         try {
-            double zoom = Double.parseDouble(zoomText.getText());
-            if (zoom <= 0) {
+            double initialZoom = Double.parseDouble(initialZoomText.getText());
+            if (initialZoom <= 0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            updateStatusLabel("Zoom must be a positive number");
+            updateStatusLabel("Initial Zoom must be a positive number");
+            return false;
+        }
+        //Validate fps
+        try {
+            int fps = Integer.parseInt(timeBetweenFramesText.getText());
+            if (fps <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            updateStatusLabel("Frames per Second must be a positive integer");
             return false;
         }
         //Validate dimensions

@@ -19,7 +19,6 @@ UI:
    - Have option to use smooth images or not
 
 GENERAL:
- - Put classes into packages to clean code (particularly all the Window classes)
  - Increase precision of calculations to better than double
    - Look at 'Perturbation Theory' in wiki
    - Use Fractions with BigInteger (pretty slow I'd imagine...)

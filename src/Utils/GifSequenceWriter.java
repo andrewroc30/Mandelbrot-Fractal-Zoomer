@@ -1,4 +1,5 @@
-// 
+package Utils;
+//
 //  GifSequenceWriter.java
 //  
 //  Created by Elliot Kroo on 2009-04-25.

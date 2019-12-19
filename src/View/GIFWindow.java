@@ -1,7 +1,12 @@
+package View;
+
+import Controller.GifController;
+import Main.Main;
+
 import javax.swing.*;
 import java.io.File;
 
-public class MP4Window extends JFrame {
+public class GIFWindow extends JFrame {
     private JLabel xLabel;
     private JTextField xText;
 
@@ -39,17 +44,17 @@ public class MP4Window extends JFrame {
 
     private JLabel statusLabel;
 
-    private JButton mp4Button;
+    private JButton gifButton;
 
-    public MP4Window() {
-        super("Create an MP4");
+    public GIFWindow() {
+        super("Create a GIF");
     }
 
     /**
      * Updates the Status Label with the given String
      * @param status The new status to set the Status Label to
      */
-    void updateStatusLabel(String status) {
+    public void updateStatusLabel(String status) {
         System.out.println(status);
         SwingUtilities.invokeLater(() -> {
             this.statusLabel.setText(status);
@@ -218,15 +223,15 @@ public class MP4Window extends JFrame {
         this.statusLabel.setBounds(160, 360, 500, 300);
         this.add(this.statusLabel);
 
-        // MP4 Button
-        this.mp4Button = new JButton();
-        this.mp4Button.setText("Create MP4");
-        this.mp4Button.setBounds(170, 600, 150, 50);
-        this.mp4Button.addActionListener(e -> {
-            System.out.println("Create an MP4");
+        // GIF Button
+        this.gifButton = new JButton();
+        this.gifButton.setText("Create GIF");
+        this.gifButton.setBounds(170, 600, 150, 50);
+        this.gifButton.addActionListener(e -> {
+            System.out.println("Create a GIF");
             if (validateInput()) {
                 try {
-                    Main.statusType = "mp4";
+                    Main.statusType = "gif";
                     Main.setPaths(this.filePickerText.getText());
                     double x = Double.parseDouble(this.xText.getText());
                     double y = Double.parseDouble(this.yText.getText());
@@ -234,7 +239,7 @@ public class MP4Window extends JFrame {
                     int numImages = Integer.parseInt(this.numImagesText.getText());
                     int iterations = Integer.parseInt(this.iterationsText.getText());
                     double initialZoom = Double.parseDouble(this.initialZoomText.getText());
-                    int fps = Integer.parseInt(this.timeBetweenFramesText.getText());
+                    int timeBetweenFramesMS = Main.fpsToMs(Integer.parseInt(this.timeBetweenFramesText.getText()));
                     int dimX = Integer.parseInt(this.dimensionsTextX.getText());
                     int dimY = Integer.parseInt(this.dimensionsTextY.getText());
                     int maxThreads = Runtime.getRuntime().availableProcessors() - 2;
@@ -246,7 +251,7 @@ public class MP4Window extends JFrame {
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
                             playPauseButton.setText("Pause");
-                            GifController.makeMp4WithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
+                            GifController.makeGifWithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
                             Main.setIsPaused(true);
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
@@ -256,15 +261,11 @@ public class MP4Window extends JFrame {
                     };
                     worker.execute();
                 } catch (Exception ex) {
-                    System.out.println(ex.getMessage());
-                    for (StackTraceElement trace : ex.getStackTrace()) {
-                        System.out.println(trace);
-                    }
                     System.out.println("GIF Creation Failed!");
                 }
             }
         });
-        this.add(this.mp4Button);
+        this.add(this.gifButton);
     }
 
     /**

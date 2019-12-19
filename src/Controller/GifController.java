@@ -1,3 +1,9 @@
+package Controller;
+
+import Main.Main;
+import Main.ThreadedImageCreator;
+import Utils.GifSequenceWriter;
+
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
@@ -11,9 +17,9 @@ import static java.lang.Math.log;
 
 public class GifController {
 
-    static volatile int numImagesCreated = 0;
-    static volatile int numActiveThreads = 0;
-    static volatile int numImagesToCreate = 0;
+    public static volatile int numImagesCreated = 0;
+    public static volatile int numActiveThreads = 0;
+    public static volatile int numImagesToCreate = 0;
 
     /**
      * Converts number to filename
@@ -200,7 +206,7 @@ public class GifController {
      * @param timeBetweenFramesMS The number of milliseconds between frames
      * @throws Exception          createImagesThreaded and writeToGif throw exceptions
      */
-    static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
+    public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
                                    double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
@@ -233,7 +239,7 @@ public class GifController {
      * @param fps        The frames per second of the video
      * @throws Exception createImagesThreaded and writeToMp4 throw exceptions
      */
-    static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
+    public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
                                    double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;

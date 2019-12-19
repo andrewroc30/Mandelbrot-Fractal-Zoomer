@@ -1,3 +1,9 @@
+package Controller;
+
+import Main.Main;
+import Utils.ZoomedImage;
+import View.ImageWindow;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 

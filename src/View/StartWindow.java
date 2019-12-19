@@ -1,3 +1,7 @@
+package View;
+
+import Main.Main;
+
 import javax.swing.*;
 
 public class StartWindow extends JFrame {
@@ -6,7 +10,7 @@ public class StartWindow extends JFrame {
     private JButton pngButton;
     private JButton exploreButton;
 
-    StartWindow() {
+    public StartWindow() {
         super("Mandelbrot Fractal Zoomer");
     }
 

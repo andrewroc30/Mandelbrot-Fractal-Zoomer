@@ -1,3 +1,7 @@
+package View;
+
+import Controller.ImageController;
+import Utils.ZoomedImage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
