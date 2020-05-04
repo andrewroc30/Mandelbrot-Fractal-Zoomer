@@ -2,9 +2,11 @@ package View;
 
 import Main.Main;
 import Controller.GifController;
+import Utils.BigFraction;
 
 import javax.swing.*;
 import java.io.File;
+import java.math.BigDecimal;
 
 public class MP4Window extends JFrame {
     private JLabel xLabel;
@@ -233,8 +235,8 @@ public class MP4Window extends JFrame {
                 try {
                     Main.statusType = "mp4";
                     Main.setPaths(this.filePickerText.getText());
-                    double x = Double.parseDouble(this.xText.getText());
-                    double y = Double.parseDouble(this.yText.getText());
+                    BigFraction x = new BigFraction(this.xText.getText());
+                    BigFraction y = new BigFraction(this.yText.getText());
                     double zoomFactor = Double.parseDouble(this.zoomFactorText.getText());
                     int numImages = Integer.parseInt(this.numImagesText.getText());
                     int iterations = Integer.parseInt(this.iterationsText.getText());

@@ -1,6 +1,7 @@
 package Main;
 
 import Controller.*;
+import Utils.BigFraction;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -14,8 +15,8 @@ public class ThreadedImageCreator implements Runnable {
     private int height;
     private int iterations;
     private double zoom;
-    private double x;
-    private double y;
+    private BigFraction x;
+    private BigFraction y;
 
     public ThreadedImageCreator(String input) {
         this.inputStr = input;
@@ -24,15 +25,15 @@ public class ThreadedImageCreator implements Runnable {
         this.height = Integer.parseInt(inputs[1]);
         this.iterations = Integer.parseInt(inputs[2]);
         this.zoom = Double.parseDouble(inputs[3]);
-        this.x = Double.parseDouble(inputs[4]);
-        this.y = Double.parseDouble(inputs[5]);
+        this.x = new BigFraction(inputs[4]);
+        this.y = new BigFraction(inputs[5]);
         this.outputFile = new File(Main.tempImageDir, inputs[6]);
     }
 
     public void run() {
         try {
-            //BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
-            BufferedImage image = ImageController.createSmoothZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
+            BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
+            //BufferedImage image = ImageController.createSmoothZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
             if (image == null) {
                 System.out.print("Cancelling thread with zoom " + this.zoom);
                 return;

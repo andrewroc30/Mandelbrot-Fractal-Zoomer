@@ -27,11 +27,11 @@ public class ExploreWindow extends JFrame {
         dimX = (int)screenSize.getWidth();
         dimY = (int)screenSize.getHeight();
         setSize(dimX, dimY);
-        ZoomedImage zi = ImageController.createZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
+        //ZoomedImage zi = ImageController.createZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
         //ZoomedImage zi = ImageController.createSmoothZoomedImage((int)screenSize.getWidth(), (int)screenSize.getHeight(), 1000, 1, 0, 0);
-        image = zi.image;
-        points = zi.points;
-        zoom = zi.zoom;
+        //image = zi.image;
+        //points = zi.points;
+        //zoom = zi.zoom;
         background = new JLabel();
         background.setIcon(new ImageIcon(image));
         background.setLayout(new BorderLayout());
@@ -101,9 +101,9 @@ class LayeredPane extends JLayeredPane {
                 int yPixel = (onClickY + highlightedY) / 2;
                 Point.Double midPoint = parentWindow.points[yPixel][xPixel];
                 // Create the image
-                ZoomedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
+                //ZoomedImage img = ImageController.createZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
                 //ZoomedImage img = ImageController.createSmoothZoomedImage(parentWindow.dimX, parentWindow.dimY, 1000, newZoom, midPoint.x, midPoint.y);
-                parentWindow.updateImage(img);
+                //parentWindow.updateImage(img);
             }
         };
         addMouseListener(ma);

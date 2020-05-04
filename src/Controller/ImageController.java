@@ -1,11 +1,13 @@
 package Controller;
 
 import Main.Main;
+import Utils.BigFraction;
 import Utils.ZoomedImage;
 import View.ImageWindow;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.math.BigInteger;
 
 import static java.lang.Math.floor;
 import static java.lang.Math.log;
@@ -22,7 +24,7 @@ public class ImageController {
      * @param y_coord The y-coordinate of the center of the image
      * @return BufferedImage of the zoomed in image of the Mandelbrot set
      */
-    public static ZoomedImage createZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
+    public static ZoomedImage createZoomedImage(int width, int height, int max, double zoom, BigFraction x_coord, BigFraction y_coord) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Point.Double[][] points = new Point.Double[height][width];
 
@@ -32,21 +34,29 @@ public class ImageController {
             colors[i] = Color.HSBtoRGB(i / 256f, 1, i / (i + 8f));
         }
 
-        double x0, y0;
+        BigFraction x0, y0;
+        BigFraction two = new BigFraction(2);
+        BigFraction four = new BigFraction(4);
+        BigFraction w = new BigFraction(width);
+        BigFraction h = new BigFraction(height);
+        BigFraction z = new BigFraction(zoom);
 
         for (int row = 0; row < height; row++) {
+            BigFraction r = new BigFraction(row);
             for (int col = 0; col < width; col++) {
-                x0 = (((col - width / 2.0) * 4.0 / width) / zoom) + x_coord;
-                y0 = (((row - height / 2.0) * 4.0 / width) / zoom) + y_coord;
-                points[row][col] = new Point.Double(x0, y0);
+                System.out.println("(" + col + "," + row + ")");
+                BigFraction c = new BigFraction(col);
+                x0 = (((c.subtract(w).divide(two)).multiply(four).divide(w)).divide(z)).add(x_coord);
+                y0 = (((r.subtract(h).divide(two)).multiply(four).divide(w)).divide(z)).add(y_coord);
+                points[row][col] = new Point.Double(x0.doubleValue(), y0.doubleValue());
 
                 //Cardioid checking
-                double lessX = (x0 - 0.25);
-                double ySquare = y0 * y0;
-                double q = (lessX * lessX) + ySquare;
-                if (q * (q + lessX) <= 0.25 * ySquare) {
-                    continue;
-                }
+                //double lessX = (x0 - 0.25);
+                //double ySquare = y0 * y0;
+                //double q = (lessX * lessX) + ySquare;
+                //if (q * (q + lessX) <= 0.25 * ySquare) {
+                //    continue;
+                //}
 
                 int escapeIteration = getIterations(x0, y0, max);
                 if (escapeIteration == -1) {
@@ -67,20 +77,21 @@ public class ImageController {
      * @param max maximum number of iterations
      * @return The number of iterations it took to escape, or -1 if the image is cancelled
      */
-    private static int getIterations(double x0, double y0, int max) {
-        double x = 0, y = 0, xSquare = 0, ySquare = 0, xTemp;
+    private static int getIterations(BigFraction x0, BigFraction y0, int max) {
+        BigFraction x = BigFraction.ZERO, y = BigFraction.ZERO, xSquare = BigFraction.ZERO, ySquare = BigFraction.ZERO, xTemp;
         int iteration = 0;
+        BigFraction two = new BigFraction(2);
 
-        while (xSquare + ySquare < 4 && iteration < max) {
+        while (xSquare.add(ySquare).compareTo(4) < 0 && iteration < max) {
             // If we cancel, stop creating the image
             if (Main.getIsCancelledForce()) {
                 return -1;
             }
             // Do the actual algorithm...
-            xSquare = x * x;
-            ySquare = y * y;
-            xTemp = xSquare - ySquare + x0;
-            y = 2 * x * y + y0;
+            xSquare = x.multiply(x);
+            ySquare = y.multiply(y);
+            xTemp = xSquare.subtract(ySquare).add(x0);
+            y = two.multiply(x).multiply(y).add(y0);
             x = xTemp;
             iteration++;
         }

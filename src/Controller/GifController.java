@@ -2,6 +2,7 @@ package Controller;
 
 import Main.Main;
 import Main.ThreadedImageCreator;
+import Utils.BigFraction;
 import Utils.GifSequenceWriter;
 
 import javax.imageio.ImageIO;
@@ -46,7 +47,7 @@ public class GifController {
      * @throws Exception For thread sleeping
      */
     private static void createImagesThreaded(int width, int height, int iterations, double zoom,
-                                             double zoomFactor, double x, double y, int maxThreads) throws Exception {
+                                             double zoomFactor, BigFraction x, BigFraction y, int maxThreads) throws Exception {
         int lastImageIndex = 0;
         ThreadedImageCreator t;
         for (int i = 0; i < numImagesToCreate; i++) {
@@ -215,7 +216,7 @@ public class GifController {
         // CREATE TEMP IMAGES FOLDER
         Main.tempImageDir.mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
-        createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
+        //createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
         writeToGif(timeBetweenFramesMS, getImageNames());
         // CLEANUP
@@ -240,7 +241,7 @@ public class GifController {
      * @throws Exception createImagesThreaded and writeToMp4 throw exceptions
      */
     public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                   double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
+                                          double zoomFactor, BigFraction x, BigFraction y, int maxThreads, int fps) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
         // CLEANUP
