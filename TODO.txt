@@ -41,3 +41,4 @@ BUGS:
  - Can't create 2 MP4s or PNGs in a row? (need to check gif as well)
  - Dimensions of window != dimensions of screen, so point is slightly off depending on difference (Explore Window)
  - Not enough precision at high zooms, need better than just doubles
+ - Cancelling/Force Cancelling then trying to create again says that process needs to be paused still

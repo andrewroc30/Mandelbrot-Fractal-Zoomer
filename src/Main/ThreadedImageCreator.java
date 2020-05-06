@@ -1,6 +1,7 @@
 package Main;
 
 import Controller.*;
+import Utils.ZoomedImage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -39,12 +40,14 @@ public class ThreadedImageCreator implements Runnable {
      */
     public void run() {
         try {
-            //BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
-            BufferedImage image = ImageController.createSmoothZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
-            if (image == null) {
-                System.out.print("Cancelling thread with zoom " + this.zoom);
+            ZoomedImage zi = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
+            //ZoomedImage zi = ImageController.createSmoothZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
+            if (zi == null) {
+                System.out.println("Cancelling thread with zoom " + this.zoom);
                 return;
             }
+
+            BufferedImage image = zi.image;
             try {
                 Main.arrayPushLock.lock();
                 ImageIO.write(image, "png", outputFile);
