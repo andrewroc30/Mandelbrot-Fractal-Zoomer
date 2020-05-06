@@ -7,16 +7,21 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class ThreadedImageCreator implements Runnable {
-    private Thread t;
-    private File outputFile;
-    private String inputStr;
-    private int width;
-    private int height;
-    private int iterations;
-    private double zoom;
-    private double x;
-    private double y;
 
+    private Thread t;           /* This Thread */
+    private File outputFile;    /* The File to save the created image to */
+    private String inputStr;    /* The fields in a comma delimited String */
+    private int width;          /* The width of the image to create */
+    private int height;         /* The height of the image to create */
+    private int iterations;     /* The number of iterations to use in the image */
+    private double zoom;        /* The zoom of the image to create */
+    private double x;           /* The x-coordinate of the center of the image to create */
+    private double y;           /* The y-coordinate of the center of the image to create */
+
+    /**
+     * Constructor which sets most fields from the comma delimited String input
+     * @param input     The comma delimited String which contains values to set fields to
+     */
     public ThreadedImageCreator(String input) {
         this.inputStr = input;
         String[] inputs = input.split(",");
@@ -29,6 +34,9 @@ public class ThreadedImageCreator implements Runnable {
         this.outputFile = new File(Main.tempImageDir, inputs[6]);
     }
 
+    /**
+     * Runs the work for this thread, which is to create and save an image
+     */
     public void run() {
         try {
             //BufferedImage image = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y).image;
@@ -53,6 +61,10 @@ public class ThreadedImageCreator implements Runnable {
         }
     }
 
+    /**
+     * Either increments or decrements numActiveThreads in a thread safe manner
+     * @param increment     If true then increment, decrement otherwise
+     */
     public static void changeNumThreads(boolean increment) {
         Main.numThreadsLock.lock();
         try {
@@ -66,6 +78,9 @@ public class ThreadedImageCreator implements Runnable {
         }
     }
 
+    /**
+     * Initializes this Thread
+     */
     public void start() {
         if (t == null) {
             t = new Thread(this, inputStr);
