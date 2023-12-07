@@ -6,7 +6,7 @@ import Main.Main;
 import javax.swing.*;
 import java.io.File;
 
-public class GIFWindow extends JFrame {
+public class GIFWindow extends JFrame implements CreationWindow {
     private JLabel xLabel;
     private JTextField xText;
 
@@ -233,6 +233,7 @@ public class GIFWindow extends JFrame {
                 try {
                     Main.statusType = "gif";
                     Main.setPaths(this.filePickerText.getText());
+                    CreationWindow creationWindow = this;
                     double x = Double.parseDouble(this.xText.getText());
                     double y = Double.parseDouble(this.yText.getText());
                     double zoomFactor = Double.parseDouble(this.zoomFactorText.getText());
@@ -251,7 +252,7 @@ public class GIFWindow extends JFrame {
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
                             playPauseButton.setText("Pause");
-                            GifController.makeGifWithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
+                            GifController.makeGifWithThreads(creationWindow, numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, timeBetweenFramesMS);
                             Main.setIsPaused(true);
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
@@ -365,5 +366,20 @@ public class GIFWindow extends JFrame {
         }
 
         return true;
+    }
+
+    @Override
+    public void addNewProgressBar(String filename) {
+        // TODO
+    }
+
+    @Override
+    public void updateProgress(String filename, int completionPercentage) {
+        // TODO
+    }
+
+    @Override
+    public void removeProgressBar(String filename) {
+        // TODO
     }
 }

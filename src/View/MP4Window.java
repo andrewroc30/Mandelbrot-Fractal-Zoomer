@@ -4,47 +4,45 @@ import Main.Main;
 import Controller.GifController;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-public class MP4Window extends JFrame {
+public class MP4Window extends JFrame implements CreationWindow {
     private JLabel xLabel;
     private JTextField xText;
-
     private JLabel yLabel;
     private JTextField yText;
-
     private JLabel zoomFactorLabel;
     private JTextField zoomFactorText;
-
     private JLabel numImagesLabel;
     private JTextField numImagesText;
-
     private JLabel iterationsLabel;
     private JTextField iterationsText;
-
     private JLabel initialZoomLabel;
     private JTextField initialZoomText;
-
     private JLabel timeBetweenFramesLabel;
     private JTextField timeBetweenFramesText;
-
     private JLabel dimensionsLabel;
     private JLabel dimensionsSplitLabel;
     private JTextField dimensionsTextX;
     private JTextField dimensionsTextY;
-
     private JLabel filePickerLabel;
     private JTextField filePickerText;
     private JButton filePickerButton;
     private JFileChooser filePickerChooser;
-
     private JButton playPauseButton;
     private JButton cancelButton;
     private JButton cancelButtonForce;
-
     private JLabel statusLabel;
-
     private JButton mp4Button;
+    private JPanel progressBarPanel;
+    private GridLayout progressBarGridLayout;
+    private final Map<String, JProgressBar> progressBarMap = new HashMap<>();
 
     public MP4Window() {
         super("Create an MP4");
@@ -233,6 +231,7 @@ public class MP4Window extends JFrame {
                 try {
                     Main.statusType = "mp4";
                     Main.setPaths(this.filePickerText.getText());
+                    CreationWindow creationWindow = this;
                     double x = Double.parseDouble(this.xText.getText());
                     double y = Double.parseDouble(this.yText.getText());
                     double zoomFactor = Double.parseDouble(this.zoomFactorText.getText());
@@ -251,7 +250,7 @@ public class MP4Window extends JFrame {
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
                             playPauseButton.setText("Pause");
-                            GifController.makeMp4WithThreads(numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
+                            GifController.makeMp4WithThreads(creationWindow, numImages, dimX, dimY, iterations, initialZoom, zoomFactor, x, y, maxThreads, fps);
                             Main.setIsPaused(true);
                             Main.setIsCancelled(false);
                             Main.setIsCancelledForce(false);
@@ -270,12 +269,21 @@ public class MP4Window extends JFrame {
             }
         });
         this.add(this.mp4Button);
+
+        // Add progress bar grid
+        this.progressBarPanel = new JPanel();
+        Border border = BorderFactory.createLineBorder(Color.black);
+        this.progressBarPanel.setBorder(border);
+        this.progressBarGridLayout = new GridLayout(5, 0);
+        this.progressBarPanel.setLayout(progressBarGridLayout);
+        this.progressBarPanel.setBounds(10, 380, 450, 100);
+        this.add(progressBarPanel);
     }
 
     /**
      * Validates user input to prevent bad data, puts data on status label to inform user
      *
-     * @return Whether or not all of the values in the input can be parsed properly
+     * @return Whether all the values in the input can be parsed properly
      */
     private boolean validateInput() {
         //Check if we are already doing something
@@ -369,5 +377,47 @@ public class MP4Window extends JFrame {
         }
 
         return true;
+    }
+
+    @Override
+    public void addNewProgressBar(String filename) {
+        // Add progress bar to window
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
+        progressBarMap.put(filename, progressBar);
+        this.progressBarPanel.add(progressBar);
+        setProgressBarGridLayoutDimensions();
+    }
+
+    @Override
+    public void updateProgress(String filename, int completionPercentage) {
+        SwingUtilities.invokeLater(() -> {
+            JProgressBar progressBar = progressBarMap.get(filename);
+            if (Objects.nonNull(progressBar) && progressBar.getValue() < completionPercentage) {
+                progressBar.setValue(completionPercentage);
+                progressBar.update(progressBar.getGraphics());
+            }
+        });
+    }
+
+    @Override
+    public void removeProgressBar(String filename) {
+        // Remove the progress bar from the window
+        JProgressBar progressBar = progressBarMap.remove(filename);
+        this.progressBarPanel.remove(progressBar);
+        setProgressBarGridLayoutDimensions();
+    }
+
+    private void setProgressBarGridLayoutDimensions() {
+        // Want to have the number of rows be 5 times the number of columns at large thread counts
+        // Example: 100 elements = 20 rows of 5 columns
+        // Also want a minimum of 5 rows at all times thread count is greater than 4
+        int totalElements = progressBarMap.size();
+        if (totalElements <= 25) {
+            progressBarGridLayout.setRows(5);
+        } else {
+            progressBarGridLayout.setRows(totalElements / 5);
+        }
     }
 }

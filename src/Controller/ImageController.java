@@ -2,10 +2,12 @@ package Controller;
 
 import Main.Main;
 import Utils.ZoomedImage;
+import View.CreationWindow;
 import View.ImageWindow;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 import static java.lang.Math.floor;
 import static java.lang.Math.log;
@@ -14,6 +16,7 @@ public class ImageController {
 
     /**
      * Returns an image of the Mandelbrot set with the given zoom
+     * @param creationWindow The window to update with status
      * @param width The width in pixels of the image
      * @param height The height in pixels of the image
      * @param max The maximum number of iterations per pixel
@@ -22,10 +25,11 @@ public class ImageController {
      * @param y_coord The y-coordinate of the center of the image
      * @return BufferedImage of the zoomed in image of the Mandelbrot set
      */
-    public static ZoomedImage createZoomedImage(int width, int height, int max, double zoom, double x_coord, double y_coord) {
+    public static ZoomedImage createZoomedImage(CreationWindow creationWindow, String filename, int width, int height, int max, double zoom, double x_coord, double y_coord) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Point.Double[][] points = new Point.Double[height][width];
 
+        int rowProgressPercentage = 0;
         int black = 0;
         int[] colors = new int[max];
         for (int i = 0; i < max; i++) {
@@ -55,6 +59,11 @@ public class ImageController {
 
                 if (escapeIteration < max) image.setRGB(col, row, colors[escapeIteration]);
                 else image.setRGB(col, row, black);
+            }
+            int rowCompletionPercentage = (int)(row*100 / (float)height);
+            if (Objects.nonNull(creationWindow) && rowCompletionPercentage > rowProgressPercentage) {
+                rowProgressPercentage = rowCompletionPercentage;
+                creationWindow.updateProgress(filename, rowCompletionPercentage);
             }
         }
         return new ZoomedImage(image, points, zoom);

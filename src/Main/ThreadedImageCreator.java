@@ -2,6 +2,7 @@ package Main;
 
 import Controller.*;
 import Utils.ZoomedImage;
+import View.CreationWindow;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,6 +11,7 @@ import java.io.File;
 public class ThreadedImageCreator implements Runnable {
 
     private Thread t;           /* This Thread */
+    private CreationWindow creationWindow; /* The window to update with progress */
     private File outputFile;    /* The File to save the created image to */
     private String inputStr;    /* The fields in a comma delimited String */
     private int width;          /* The width of the image to create */
@@ -23,7 +25,8 @@ public class ThreadedImageCreator implements Runnable {
      * Constructor which sets most fields from the comma delimited String input
      * @param input     The comma delimited String which contains values to set fields to
      */
-    public ThreadedImageCreator(String input) {
+    public ThreadedImageCreator(CreationWindow creationWindow, String input) {
+        this.creationWindow = creationWindow;
         this.inputStr = input;
         String[] inputs = input.split(",");
         this.width = Integer.parseInt(inputs[0]);
@@ -39,8 +42,10 @@ public class ThreadedImageCreator implements Runnable {
      * Runs the work for this thread, which is to create and save an image
      */
     public void run() {
+        String filename = this.outputFile.getName();
         try {
-            ZoomedImage zi = ImageController.createZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
+            creationWindow.addNewProgressBar(filename);
+            ZoomedImage zi = ImageController.createZoomedImage(this.creationWindow, filename, this.width, this.height, this.iterations, this.zoom, this.x, this.y);
             //ZoomedImage zi = ImageController.createSmoothZoomedImage(this.width, this.height, this.iterations, this.zoom, this.x, this.y);
             if (zi == null) {
                 System.out.println("Cancelling thread with zoom " + this.zoom);
@@ -61,6 +66,8 @@ public class ThreadedImageCreator implements Runnable {
             }
         } catch (Error e) {
             System.out.println("Couldn't create image!");
+        } finally {
+            creationWindow.removeProgressBar(filename);
         }
     }
 

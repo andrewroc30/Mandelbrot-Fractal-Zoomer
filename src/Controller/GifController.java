@@ -3,6 +3,7 @@ package Controller;
 import Main.Main;
 import Main.ThreadedImageCreator;
 import Utils.GifSequenceWriter;
+import View.CreationWindow;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
@@ -35,22 +36,24 @@ public class GifController {
     /**
      * Creates the images using threads
      *
-     * @param width      The width in pixels of the GIF
-     * @param height     The height in pixels of the GIF
-     * @param iterations The number if iterations used to determine a single pixel (higher iterations means better image)
-     * @param zoom       The starting zoom for the GIF
-     * @param zoomFactor The factor by which the zoom is increased every image in the GIF
-     * @param x          The x-coordinate to zoom into
-     * @param y          The y-coordinate to zoom into
-     * @param maxThreads The maximum number of threads that can be active at once
-     * @throws Exception For thread sleeping
+     * @param creationWindow    The window to update with progress
+     * @param width             The width in pixels of the GIF
+     * @param height            The height in pixels of the GIF
+     * @param iterations        The number if iterations used to determine a single pixel (higher iterations means better image)
+     * @param zoom              The starting zoom for the GIF
+     * @param zoomFactor        The factor by which the zoom is increased every image in the GIF
+     * @param x                 The x-coordinate to zoom into
+     * @param y                 The y-coordinate to zoom into
+     * @param maxThreads        The maximum number of threads that can be active at once
+     * @throws Exception        For thread sleeping
      */
-    private static void createImagesThreaded(int width, int height, int iterations, double zoom,
+    private static void createImagesThreaded(CreationWindow creationWindow, int width, int height, int iterations, double zoom,
                                              double zoomFactor, double x, double y, int maxThreads) throws Exception {
         int lastImageIndex = 0;
         ThreadedImageCreator t;
         for (int i = 0; i < numImagesToCreate; i++) {
             //Wait until there is another space for the thread to be made
+            // TODO: Instead of this sleep, can have thread report back when done
             while (numActiveThreads >= maxThreads || Main.getIsPaused() && !Main.getIsCancelled() && !Main.getIsCancelledForce()) {
                 Thread.sleep(10);
             }
@@ -63,7 +66,7 @@ public class GifController {
                 break;
             }
             // Kick off a thread to create the zoomed image
-            t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y + "," + getOutputFilename(i));
+            t = new ThreadedImageCreator(creationWindow, width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y + "," + getOutputFilename(i));
             t.start();
             zoom = zoom * zoomFactor;
             ThreadedImageCreator.changeNumThreads(true);
@@ -206,7 +209,7 @@ public class GifController {
      * @param timeBetweenFramesMS The number of milliseconds between frames
      * @throws Exception          createImagesThreaded and writeToGif throw exceptions
      */
-    public static void makeGifWithThreads(int numImages, int width, int height, int iterations, double zoom,
+    public static void makeGifWithThreads(CreationWindow creationWindow, int numImages, int width, int height, int iterations, double zoom,
                                    double zoomFactor, double x, double y, int maxThreads, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
@@ -215,7 +218,7 @@ public class GifController {
         // CREATE TEMP IMAGES FOLDER
         Main.tempImageDir.mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
-        createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
+        createImagesThreaded(creationWindow, width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
         writeToGif(timeBetweenFramesMS, getImageNames());
         // CLEANUP
@@ -227,20 +230,21 @@ public class GifController {
     /**
      * Creates a Mandelbrot MP4 with threads
      *
-     * @param numImages  The number of frames in the video
-     * @param width      The width in pixels of the video
-     * @param height     The height in pixels of the video
-     * @param iterations The number of iterations used to determine a single pixel (higher iterations means better image)
-     * @param zoom       The starting zoom
-     * @param zoomFactor The factor by which the zoom is increased every image in the video
-     * @param x          The x-coordinate of the center point
-     * @param y          The y-coordinate of the center point
-     * @param maxThreads The maximum number of threads that can be active at once
-     * @param fps        The frames per second of the video
-     * @throws Exception createImagesThreaded and writeToMp4 throw exceptions
+     * @param creationWindow    The window to update with progress
+     * @param numImages         The number of frames in the video
+     * @param width             The width in pixels of the video
+     * @param height            The height in pixels of the video
+     * @param iterations        The number of iterations used to determine a single pixel (higher iterations means better image)
+     * @param zoom              The starting zoom
+     * @param zoomFactor        The factor by which the zoom is increased every image in the video
+     * @param x                 The x-coordinate of the center point
+     * @param y                 The y-coordinate of the center point
+     * @param maxThreads        The maximum number of threads that can be active at once
+     * @param fps               The frames per second of the video
+     * @throws Exception        createImagesThreaded and writeToMp4 throw exceptions
      */
-    public static void makeMp4WithThreads(int numImages, int width, int height, int iterations, double zoom,
-                                   double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
+    public static void makeMp4WithThreads(CreationWindow creationWindow, int numImages, int width, int height, int iterations, double zoom,
+                                          double zoomFactor, double x, double y, int maxThreads, int fps) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
         // CLEANUP
@@ -248,7 +252,7 @@ public class GifController {
         // CREATE TEMP IMAGES FOLDER
         Main.tempImageDir.mkdir();
         // CREATE THE IMAGES, EACH THREAD MAKES A DIFFERENT IMAGE
-        createImagesThreaded(width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
+        createImagesThreaded(creationWindow, width, height, iterations, zoom, zoomFactor, x, y, maxThreads);
         // WRITE IMAGES TO GIF
         writeToMp4(fps, numImages);
         // CLEANUP
@@ -270,7 +274,7 @@ public class GifController {
      * @param timeBetweenFramesMS The number of milliseconds between frames
      * @throws Exception          Thread sleeping and writeToGif throw exceptions
      */
-    public static void makeGifWithThreadsAutoIterations(int numImages, int width, int height, double zoom,
+    public static void makeGifWithThreadsAutoIterations(CreationWindow creationWindow, int numImages, int width, int height, double zoom,
                                                         double zoomFactor, double x, double y, int timeBetweenFramesMS) throws Exception {
         long startTime = System.nanoTime();
         numImagesToCreate = numImages;
@@ -285,7 +289,7 @@ public class GifController {
         for (int i = 0; i < numImages; i++) {
             System.out.println(iterations);
             //System.out.println(zoom);
-            t = new ThreadedImageCreator(width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
+            t = new ThreadedImageCreator(creationWindow, width + "," + height + "," + iterations + "," + zoom + "," + x + "," + y);
             iterations = (int) Math.ceil(10000 * Math.pow(log(zoom), 1.1)) + 100;
             t.start();
             zoom = zoom * zoomFactor;
