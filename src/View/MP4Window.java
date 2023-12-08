@@ -160,16 +160,19 @@ public class MP4Window extends JFrame implements CreationWindow {
         this.add(this.dimensionsTextY);
 
         // Output Folder Field
+        String defaultDirectory = System.getProperty("user.home") + File.separator + "Documents";
         this.filePickerLabel = new JLabel();
         this.filePickerLabel.setText("Pick output folder");
         this.filePickerLabel.setBounds(50, 205, 500, 300);
         this.filePickerText = new JTextField();
         this.filePickerText.setBounds(180, 340, 200, 25);
+        this.filePickerText.setText(defaultDirectory);
         this.filePickerButton = new JButton();
         this.filePickerButton.setText("Browse");
         this.filePickerButton.setBounds(380, 340, 80, 25);
         this.filePickerChooser = new JFileChooser();
         this.filePickerChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        this.filePickerChooser.setCurrentDirectory(new File(defaultDirectory));
         this.filePickerButton.addActionListener(evt -> {
             if (this.filePickerChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 this.filePickerText.setText(this.filePickerChooser.getSelectedFile().getAbsolutePath());
