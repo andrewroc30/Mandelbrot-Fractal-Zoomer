@@ -90,18 +90,6 @@ public class Main {
     }
 
     /**
-     * Converts the given frames per second into ms between frames
-     * @param fps The frames per second of the GIF
-     * @return Integer containing number of milliseconds between frames
-     */
-    public static int fpsToMs(int fps) {
-        if (fps == 0) {
-            return 10;
-        }
-        return 1000 / fps;
-    }
-
-    /**
      * Sets the file paths for the temporary images and final output
      *
      * @param outputDirectory The user chosen output directory

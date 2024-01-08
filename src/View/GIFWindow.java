@@ -34,7 +34,7 @@ public class GIFWindow extends AbstractCreatorWindow {
                     int numImages = Integer.parseInt(this.numImagesText.getText());
                     int iterations = Integer.parseInt(this.iterationsText.getText());
                     double initialZoom = Double.parseDouble(this.initialZoomText.getText());
-                    int timeBetweenFramesMS = Main.fpsToMs(Integer.parseInt(this.timeBetweenFramesText.getText()));
+                    int timeBetweenFramesMS = fpsToMs(Integer.parseInt(this.timeBetweenFramesText.getText()));
                     int dimX = Integer.parseInt(this.dimensionsTextX.getText());
                     int dimY = Integer.parseInt(this.dimensionsTextY.getText());
                     int maxThreads = Runtime.getRuntime().availableProcessors() - 2;
@@ -61,5 +61,17 @@ public class GIFWindow extends AbstractCreatorWindow {
             }
         });
         this.add(this.createButton);
+    }
+
+    /**
+     * Converts the given frames per second into ms between frames
+     * @param fps The frames per second of the GIF
+     * @return Integer containing number of milliseconds between frames
+     */
+    private static int fpsToMs(int fps) {
+        if (fps == 0) {
+            return 10;
+        }
+        return 1000 / fps;
     }
 }
